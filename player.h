@@ -19,6 +19,10 @@ typedef struct {
     char sprite[2][2];
     int max_speed; // CONFIG FIlLE 0 1 2 3 4 5 ...
     int time_survived;
+    struct coordinates {
+        int x;
+        int y;
+    } coordinates;
 } player_t;
 
 typedef enum {
@@ -35,8 +39,6 @@ typedef enum {
 } swallow_colors_t;
 
 void init_player(player_t *player);
-
-void update_player(player_t *player);
 
 void render_player(player_t *player);
 

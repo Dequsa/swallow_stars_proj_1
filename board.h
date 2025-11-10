@@ -13,6 +13,7 @@
 
 extern WINDOW *game_window;
 extern WINDOW *status_window;
+extern WINDOW *game_area_window;
 
 typedef struct {
     bool is_over;
@@ -27,12 +28,10 @@ typedef struct {
 
 void init_board(board_t *board);
 
-void display_board(board_t *board);
-
-void draw_swallow(const player_t *player, WINDOW *window, int current_frame ); // current_frame for animating swallow
-
 //void draw_hunter();
 
-void draw_status(const player_t *player, WINDOW *window);
-
 void update_status(const player_t *player, WINDOW *window);
+
+void update_player(const player_t *player, WINDOW *window, int current_frame);
+
+void update_screen(const player_t *player);

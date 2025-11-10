@@ -15,3 +15,5 @@ add_executable(swallow_game_proj_1 main.cpp
 )
 
 target_link_libraries(swallow_game_proj_1 ${CURSES_LIBRARIES})
+
+file(COPY CONFIGS DESTINATION ${CMAKE_BINARY_DIR})
