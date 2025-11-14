@@ -12,7 +12,7 @@
 typedef struct {
     int health; // CONFIG FILE
     int current_heading; // 0 down 1 up 2 left 3 right
-    float current_speed;
+    int current_speed;
     int stars_collected;
     float max_speed; // CONFIG FIlLE 0 1 2 3 4 5 ...
     int time_survived;

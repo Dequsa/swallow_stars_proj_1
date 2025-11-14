@@ -129,16 +129,16 @@ void move_player(player_t *player) {
     }
     //update_player_movement(player);
     if (player->current_heading == UP && (int)player->coordinates.y > 1) {
-        player->coordinates.y += -1 * player->current_speed * 0.2f;
+        player->coordinates.y += -1.0 * player->current_speed * 0.5f;
     }
-    if (player->current_heading == DOWN && (int)player->coordinates.y < LINES - STATUS_LINE_SIZE - 2) {
-        player->coordinates.y += 1 * player->current_speed * 0.2f;
+    if (player->current_heading == DOWN && (int)player->coordinates.y < (float)(LINES - STATUS_LINE_SIZE - 2.2)) {
+        player->coordinates.y += 1.0 * player->current_speed * 0.5f;
     }
-    if (player->current_heading == LEFT && (int)player->coordinates.x > 1) {
-        player->coordinates.x += -1 * player->current_speed * 0.2f;
+    if (player->current_heading == LEFT && (int)player->coordinates.x > 1.9) {
+        player->coordinates.x += -1.0 * player->current_speed * 0.5f;
     }
     if (player->current_heading == RIGHT  && (int)player->coordinates.x < COLS - 5) {
-        player->coordinates.x += 1 * player->current_speed * 0.2f;
+        player->coordinates.x += 1.0 * player->current_speed * 0.5f;
     }
 
 }

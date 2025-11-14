@@ -32,12 +32,17 @@ WINDOW *game_area_window = nullptr;
 void update_status(const player_t *player, WINDOW *window) { // update health and score
   werase(status_window);
   box(status_window, 0, 0);
+  const int game_height = LINES - STATUS_LINE_SIZE;
+  const int game_width = COLS;
+  const int status_height = STATUS_LINE_SIZE;
+  const int status_width = COLS;
   mvwprintw(status_window, 1, 2, "MAX SPEED: %d", player->max_speed);
   mvwprintw(status_window, 1, 20, "CURRENT SPEED: %d", player->current_speed);
   mvwprintw(status_window, 1, 40, "CURRENT HEADING: %d", player->current_heading);
   mvwprintw(status_window, 1, 60, "CURRENT HEALTH: %d", player->health);
   mvwprintw(status_window, 1, 80, "CURRENT X: %f", player->coordinates.x);
   mvwprintw(status_window, 1, 100, "CURRENT Y: %f", player->coordinates.y);
+  mvwprintw(status_window, 1, 120, "Lines: %d COLS: %d",game_height, game_width  );
   wrefresh(status_window);
  }
 
