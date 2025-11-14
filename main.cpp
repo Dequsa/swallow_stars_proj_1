@@ -13,13 +13,15 @@ int main() {
     init_board(&board);
     init_player(&player);
     req.tv_nsec = 16666666;
+    req.tv_sec = 0;
 
+    // main game loop
     while (!board.is_over) {
-        req.tv_sec = 0;
-        //take input
+
         move_player(&player);
-        // display input --> repeat
+
         update_screen(&player);
+
         nanosleep(&req, &rem);
     }
     nodelay(stdscr, FALSE);

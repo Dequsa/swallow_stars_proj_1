@@ -36,17 +36,17 @@ void update_status(const player_t *player, WINDOW *window) { // update health an
   mvwprintw(status_window, 1, 20, "CURRENT SPEED: %d", player->current_speed);
   mvwprintw(status_window, 1, 40, "CURRENT HEADING: %d", player->current_heading);
   mvwprintw(status_window, 1, 60, "CURRENT HEALTH: %d", player->health);
-  mvwprintw(status_window, 1, 80, "CURRENT X: %d", player->coordinates.x);
-  mvwprintw(status_window, 1, 100, "CURRENT Y: %d", player->coordinates.y);
+  mvwprintw(status_window, 1, 80, "CURRENT X: %f", player->coordinates.x);
+  mvwprintw(status_window, 1, 100, "CURRENT Y: %f", player->coordinates.y);
   wrefresh(status_window);
  }
 
 
 void update_player(const player_t *player, WINDOW *window, const int current_frame) {
   if (current_frame >= 0 && current_frame < FPS/15) {
-   mvwprintw(game_window,player->coordinates.y, player->coordinates.x,"%s", player->frame_one ); // conversion from float to int
+   mvwprintw(game_window,(int)player->coordinates.y, (int)player->coordinates.x,"%s", player->frame_one ); // conversion from float to int
   } else if (current_frame >= FPS/15) {
-   mvwprintw(game_window,player->coordinates.y, player->coordinates.x,"%s", player->frame_two ); // same thing here just so i dont have to write more vars
+   mvwprintw(game_window,(int)player->coordinates.y, (int)player->coordinates.x,"%s", player->frame_two ); // same thing here just so i dont have to write more vars
   }
   //mvwprintw(game_window,player->coordinates.y, player->coordinates.x,"%s", "V^V" );
 
