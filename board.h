@@ -10,6 +10,7 @@
 #include "player.h"
 #include <curses.h>
 #define STATUS_LINE_SIZE 3 // size of status bar in lines
+#define AMM_OF_ANIM 2 // number of frames for bird animations
 
 extern WINDOW *game_window;
 extern WINDOW *status_window;

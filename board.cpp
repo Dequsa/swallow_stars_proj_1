@@ -4,8 +4,6 @@
 
 #include "board.h"
 
-#define AMM_OF_ANIM 2 // number of frames for bird animations
-
 WINDOW *game_window = nullptr;
 WINDOW *status_window = nullptr;
 WINDOW *game_area_window = nullptr;
@@ -37,25 +35,31 @@ WINDOW *game_area_window = nullptr;
  }
 
 void update_status(const player_t *player, WINDOW *window) { // update health and score
-  // werase(status_window);
+  werase(status_window);
+  box(status_window, 0, 0);
   mvwprintw(status_window, 1, 2, "MAX SPEED: %d", player->max_speed);
   mvwprintw(status_window, 1, 20, "CURRENT SPEED: %d", player->current_speed);
   mvwprintw(status_window, 1, 40, "CURRENT HEADING: %d", player->current_heading);
   mvwprintw(status_window, 1, 60, "CURRENT HEALTH: %d", player->health);
+  mvwprintw(status_window, 1, 80, "CURRENT X: %d", player->coordinates.x);
+  mvwprintw(status_window, 1, 100, "CURRENT Y: %d", player->coordinates.y);
   // std::cout << "MAX SPEED: " << player->max_speed << std::endl;
   // std:: cout << "CURRENT SPEED: " << player->current_speed << std::endl;
   // std:: cout << "CURRENT HEADING: " << player->current_heading << std::endl;
   wrefresh(status_window);
-
  }
 
 
 void update_player(const player_t *player, WINDOW *window, const int current_frame) {
+  char bird = player->debug_spite;
+  mvwprintw(game_area_window,player->coordinates.y, player->coordinates.x,"%s", &bird );
+
 
 }
 
-
 void update_screen(const player_t *player) {
+  werase(game_window);
+  box(game_window, '|', '-');
   static int current_frame = 0;
 
   if (current_frame == AMM_OF_ANIM) {
@@ -64,7 +68,7 @@ void update_screen(const player_t *player) {
 
   update_status(player, status_window);
   update_player(player, game_area_window, current_frame);
-
+  wrefresh(game_window);
   current_frame++;
  }
 

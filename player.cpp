@@ -18,8 +18,7 @@
 
 FILE *fptr = nullptr;
 
-void init_player(player_t *player) {
-
+void load_config_player(player_t *player) {
     // ----------- CONFIG READING ---------
     fptr = fopen("./CONFIGS/stats.cfg", "r");
 
@@ -45,19 +44,47 @@ void init_player(player_t *player) {
             player->max_speed = result;
 
         }
-
-
     }
     fclose(fptr);
     // ------------------------------------
+}
+
+void init_player(player_t *player) {
+
+    player->coordinates.x = 0;
+    player->coordinates.y = 0;
     player->current_speed = 0;
     player->current_heading = UP;
     player->stars_collected = 0;
+    player->debug_spite = "V^";
 }
 
+//
+// void velocity_player(player_t *player) {
+//     if (player->current_heading == UP) {
+//         player->velocity_y = (float)player->current_speed * 0.5f;
+//     }else if (player->current_heading == DOWN) {
+//         player->velocity_y = (float)player->current_speed * 0.5f;
+//     }
+//     if (player->current_heading == LEFT) {
+//         player->velocity_x = (float)player->current_speed * 0.5f;
+//     }else if (player->current_heading == RIGHT) {
+//         player->velocity_x = (float)player->current_speed* 0.5f;
+//     }
+// }
+
+
+// void update_player_movement(player_t *player) {
+//     player->coordinates_y += player->velocity_x;
+//     player->coordinates_x += player->velocity_y;
+//
+//
+//     player->coordinates.x = (int)player->coordinates.x;
+//     player->coordinates.y = (int)player->coordinates.y;
+// }
+
 void move_player(player_t *player) {
-    int key = getch();
-    switch (key) {
+    switch (int key = getch()) {
         case 'w': {
             player->current_heading = UP;
             break;
@@ -78,17 +105,15 @@ void move_player(player_t *player) {
         case 'p': {
             if (player->current_speed < player->max_speed) {
                 player->current_speed++;
-                update_status(player, status_window);
             }
-
+            //velocity_player(player);
             break;
         }
         case 'o': {
             if (player->current_speed > 1) {
-                player->current_speed = player->current_speed - 1;
-                update_status(player, status_window);
+                player->current_speed--;
             }
-
+            //velocity_player(player);
             break;
         }
             case 'x': { // debug button
@@ -99,4 +124,18 @@ void move_player(player_t *player) {
             break;
         }
     }
+    //update_player_movement(player);
+    if (player->current_heading == UP) {
+        player->coordinates.y += -1 * player->current_speed;
+    }
+    if (player->current_heading == DOWN) {
+        player->coordinates.y += 1 * player->current_speed;
+    }
+    if (player->current_heading == LEFT) {
+        player->coordinates.x += -1 * player->current_speed;
+    }
+    if (player->current_heading == RIGHT) {
+        player->coordinates.x += 1 * player->current_speed;;
+    }
+
 }
