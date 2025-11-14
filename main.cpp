@@ -1,7 +1,5 @@
 #include <iostream>
-#include <curses.h>
-#include <time.h>
-#include "board.h" // it also has player.h in include
+#include "board.h" // connects all libs together
 
 int main() {
 
@@ -14,7 +12,7 @@ int main() {
     load_config_player(&player);
     init_board(&board);
     init_player(&player);
-    req.tv_nsec = 166666666;
+    req.tv_nsec = 16666666;
 
     while (!board.is_over) {
         req.tv_sec = 0;

@@ -24,14 +24,9 @@ WINDOW *game_area_window = nullptr;
      const int status_width = COLS;
 
      game_window = newwin(game_height, game_width, 0, 0);
-     game_area_window = derwin(game_window, game_height - 2, game_width - 2, 1, 1);
+     //game_area_window = derwin(game_window, game_height - 2, game_width - 2, 1, 1);
      status_window = newwin(status_height, status_width, game_height, 0);
 
-     box(game_window, '|', '-');
-     box(status_window, 0, 0);
-
-     wrefresh(game_window);
-     wrefresh(status_window);
  }
 
 void update_status(const player_t *player, WINDOW *window) { // update health and score
@@ -43,31 +38,33 @@ void update_status(const player_t *player, WINDOW *window) { // update health an
   mvwprintw(status_window, 1, 60, "CURRENT HEALTH: %d", player->health);
   mvwprintw(status_window, 1, 80, "CURRENT X: %d", player->coordinates.x);
   mvwprintw(status_window, 1, 100, "CURRENT Y: %d", player->coordinates.y);
-  // std::cout << "MAX SPEED: " << player->max_speed << std::endl;
-  // std:: cout << "CURRENT SPEED: " << player->current_speed << std::endl;
-  // std:: cout << "CURRENT HEADING: " << player->current_heading << std::endl;
   wrefresh(status_window);
  }
 
 
 void update_player(const player_t *player, WINDOW *window, const int current_frame) {
-  char bird = player->debug_spite;
-  mvwprintw(game_area_window,player->coordinates.y, player->coordinates.x,"%s", &bird );
+  if (current_frame >= 0 && current_frame < FPS/15) {
+   mvwprintw(game_window,player->coordinates.y, player->coordinates.x,"%s", player->frame_one ); // conversion from float to int
+  } else if (current_frame >= FPS/15) {
+   mvwprintw(game_window,player->coordinates.y, player->coordinates.x,"%s", player->frame_two ); // same thing here just so i dont have to write more vars
+  }
+  //mvwprintw(game_window,player->coordinates.y, player->coordinates.x,"%s", "V^V" );
+
 
 
 }
 
 void update_screen(const player_t *player) {
   werase(game_window);
-  box(game_window, '|', '-');
+  box(game_window, 0, 0);
   static int current_frame = 0;
 
-  if (current_frame == AMM_OF_ANIM) {
+  if (current_frame == FPS/6) {
    current_frame = 0;
   }
 
+  update_player(player, game_window, current_frame);
   update_status(player, status_window);
-  update_player(player, game_area_window, current_frame);
   wrefresh(game_window);
   current_frame++;
  }

@@ -5,18 +5,21 @@
 #ifndef SWALLOW_GAME_PROJ_1_BOARD_H
 #define SWALLOW_GAME_PROJ_1_BOARD_H
 
-#endif //SWALLOW_GAME_PROJ_1_BOARD_H
-
 #include "player.h"
 #include <curses.h>
+
 #define STATUS_LINE_SIZE 3 // size of status bar in lines
-#define AMM_OF_ANIM 2 // number of frames for bird animations
+#define FPS 60 // number of frames for bird animations
+
+#endif //SWALLOW_GAME_PROJ_1_BOARD_H
+
 
 extern WINDOW *game_window;
 extern WINDOW *status_window;
 extern WINDOW *game_area_window;
 
 typedef struct {
+    unsigned long current_seed;
     bool is_over;
     int size_x;
     int size_y;

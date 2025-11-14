@@ -2,24 +2,11 @@
 // Created by Kacper Marciniak on 11/7/25.
 //
 
-// THIS FILE HANDLES ALL THE LOGIC WHEN IT COMES TO PLAYER
-// MOVING DMG_RECIVE CURRENT SCORE
-
-//#include "player.h"
-#include <iostream>
-#include <cstring>
-#include <filesystem>
-
 #include "board.h"
-
-// #define MAX_PLAYER_HEALTH 100
-#define MAX_CONFIG_SIZE 1000
-#define MAX_LINE_SIZE 32
-
-FILE *fptr = nullptr;
+#include <iostream>
 
 void load_config_player(player_t *player) {
-    // ----------- CONFIG READING ---------
+    FILE *fptr = nullptr;
     fptr = fopen("./CONFIGS/stats.cfg", "r");
 
     if (fptr == nullptr) {
@@ -45,18 +32,34 @@ void load_config_player(player_t *player) {
 
         }
     }
+
     fclose(fptr);
-    // ------------------------------------
 }
 
 void init_player(player_t *player) {
+    const char temp_sprite_1[] = "\\OO/\0";
+    const char temp_sprite_2[] = "/OO\\\0";
 
-    player->coordinates.x = 0;
-    player->coordinates.y = 0;
+    player->coordinates.x = COLS/2; // middle of the screen x
+    player->coordinates.y = LINES/2; // middle of the screen y
     player->current_speed = 0;
     player->current_heading = UP;
     player->stars_collected = 0;
-    player->debug_spite = "V^";
+
+    int i = 0;
+    while (temp_sprite_1[i] != '\0') {
+        player->frame_one[i] = temp_sprite_1[i];
+        i++;
+    }
+    player->frame_one[i] = '\0';
+
+    i = 0;
+    while (temp_sprite_2[i] != '\0') {
+        player->frame_two[i] = temp_sprite_2[i];
+        i++;
+    }
+    player->frame_two[i] = '\0';
+
 }
 
 //
@@ -126,16 +129,16 @@ void move_player(player_t *player) {
     }
     //update_player_movement(player);
     if (player->current_heading == UP) {
-        player->coordinates.y += -1 * player->current_speed;
+        player->coordinates.y += -1 * player->current_speed * 0.2f;
     }
     if (player->current_heading == DOWN) {
-        player->coordinates.y += 1 * player->current_speed;
+        player->coordinates.y += 1 * player->current_speed * 0.2f;
     }
     if (player->current_heading == LEFT) {
-        player->coordinates.x += -1 * player->current_speed;
+        player->coordinates.x += -1 * player->current_speed * 0.2f;
     }
     if (player->current_heading == RIGHT) {
-        player->coordinates.x += 1 * player->current_speed;;
+        player->coordinates.x += 1 * player->current_speed * 0.2f;
     }
 
 }
