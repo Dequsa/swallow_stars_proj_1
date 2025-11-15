@@ -7,6 +7,7 @@
 #define PLAYER_SPRITE_SIZE 4
 #define MAX_CONFIG_SIZE 1000
 #define MAX_LINE_SIZE 32
+#define STATUS_LINE_SIZE 3
 #endif //SWALLOW_GAME_PROJ_1_PLAYER_H
 
 typedef struct {
@@ -14,7 +15,7 @@ typedef struct {
     int current_heading; // 0 down 1 up 2 left 3 right
     int current_speed;
     int stars_collected;
-    float max_speed; // CONFIG FIlLE 0 1 2 3 4 5 ...
+    int max_speed; // CONFIG FIlLE 0 1 2 3 4 5 ...
     int time_survived;
     char frame_one[PLAYER_SPRITE_SIZE + 1];
     char frame_two[PLAYER_SPRITE_SIZE + 1];
@@ -22,11 +23,6 @@ typedef struct {
         float x;
         float y;
     } coordinates;
-    char debug_spite[PLAYER_SPRITE_SIZE + 1]; // V^V ^V^
-    // float coordinates_x;
-    // float coordinates_y;
-    // float velocity_x;
-    // float velocity_y;
 } player_t;
 
 typedef enum {
@@ -50,6 +46,9 @@ void render_player(player_t *player);
 
 void destroy_player(player_t *player);
 
+void out_of_bounds_check_player(float *new_x, float *new_y);
+
 void move_player(player_t *player);
+
 
 //void velocity_update(player_t *player);

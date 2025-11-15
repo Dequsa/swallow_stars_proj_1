@@ -7,6 +7,9 @@
 
 #include "player.h"
 #include <curses.h>
+#include <cstdlib>
+#include <ctime>
+#include "stars.h"
 
 #define STATUS_LINE_SIZE 3 // size of status bar in lines
 #define FPS 60 // number of frames for bird animations
@@ -35,6 +38,8 @@ void init_board(board_t *board);
 //void draw_hunter();
 
 void update_status(const player_t *player, WINDOW *window);
+
+void update_star(const star_t *star);
 
 void update_player(const player_t *player, WINDOW *window, int current_frame);
 
