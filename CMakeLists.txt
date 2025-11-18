@@ -14,6 +14,8 @@ add_executable(swallow_game_proj_1 main.cpp
         board.cpp
         stars.h
         stars.cpp
+        hunters.h
+        hunters.cpp
 )
 
 target_link_libraries(swallow_game_proj_1 ${CURSES_LIBRARIES})

@@ -23,18 +23,51 @@ void load_config_player(player_t *player) {
 
         int temp_line = sscanf(current_line, "%d @%s", &result, name_of_variable_config);
 
-        if (strcmp(name_of_variable_config, "MAX_HEALTH") == 0 && temp_line == 2) {
+        if (strcmp(name_of_variable_config, "MAX_HEALTH") == 0 && temp_line > 0) {
 
             player->health = result;
 
-        }else if (strcmp(name_of_variable_config, "MAX_SPEED") == 0 && temp_line == 2) {
+        }else if (strcmp(name_of_variable_config, "MAX_SPEED") == 0 && temp_line > 0) {
 
             player->max_speed = result;
+
+        }else if (strcmp(name_of_variable_config, "MIN_SPEED") == 0 && temp_line > 0) {
+
+            player->min_speed = result;
 
         }
     }
 
     fclose(fptr);
+}
+
+
+void init_player(player_t *player) {
+
+    player->coordinates.x = (float)COLS/2; // middle of the screen x
+    player->coordinates.y = (float)LINES/2; // middle of the screen y
+    player->current_speed = 0;
+    player->current_heading = UP;
+    player->stars_collected = 0;
+
+
+    const char temp_sprite_1[] = "\\/\\/\0";
+    const char temp_sprite_2[] = "/\\/\\\0";
+
+    int i = 0;
+    while (temp_sprite_1[i] != '\0') {
+        player->frame_one[i] = temp_sprite_1[i];
+        i++;
+    }
+    player->frame_one[i] = '\0';
+
+    i = 0;
+    while (temp_sprite_2[i] != '\0') {
+        player->frame_two[i] = temp_sprite_2[i];
+        i++;
+    }
+    player->frame_two[i] = '\0';
+
 }
 
 
@@ -56,33 +89,6 @@ void out_of_bounds_check_player(float *new_x,  float *new_y) {
     }else if (*new_y > max_y) {
         *new_y = max_y;
     }
-}
-
-
-void init_player(player_t *player) {
-    const char temp_sprite_1[] = "\\/\\/\0";
-    const char temp_sprite_2[] = "/\\/\\\0";
-
-    player->coordinates.x = (float)COLS/2; // middle of the screen x
-    player->coordinates.y = (float)LINES/2; // middle of the screen y
-    player->current_speed = 0;
-    player->current_heading = UP;
-    player->stars_collected = 0;
-
-    int i = 0;
-    while (temp_sprite_1[i] != '\0') {
-        player->frame_one[i] = temp_sprite_1[i];
-        i++;
-    }
-    player->frame_one[i] = '\0';
-
-    i = 0;
-    while (temp_sprite_2[i] != '\0') {
-        player->frame_two[i] = temp_sprite_2[i];
-        i++;
-    }
-    player->frame_two[i] = '\0';
-
 }
 
 
@@ -113,7 +119,7 @@ void move_player(player_t *player) {
             break;
         }
         case 'o': {
-            if (player->current_speed > 0) {
+            if (player->current_speed > player->min_speed) {
                 player->current_speed--;
             }
             //velocity_player(player);
@@ -121,6 +127,7 @@ void move_player(player_t *player) {
         }
             case 'x': { // debug button
 
+            break;
         }
         default: {
             player->current_heading = player->current_heading;
@@ -134,11 +141,11 @@ void move_player(player_t *player) {
 
     switch (player->current_heading) {
         case UP: {
-            new_y -= move;
+            new_y -= move * 0.56f;
             break;
         }
         case DOWN: {
-            new_y += move;
+            new_y += move * 0.56f;
             break;
         }
         case LEFT: {

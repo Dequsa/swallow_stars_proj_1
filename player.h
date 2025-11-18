@@ -16,6 +16,7 @@ typedef struct {
     int current_speed;
     int stars_collected;
     int max_speed; // CONFIG FIlLE 0 1 2 3 4 5 ...
+    int min_speed;
     int time_survived;
     char frame_one[PLAYER_SPRITE_SIZE + 1];
     char frame_two[PLAYER_SPRITE_SIZE + 1];
