@@ -39,8 +39,6 @@ typedef enum {
     MAX_HEALTH = 3
 } swallow_colors_t;
 
-void load_config_player(player_t *player);
-
 void init_player(player_t *player);
 
 void render_player(player_t *player);

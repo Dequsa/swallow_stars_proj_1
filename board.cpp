@@ -95,7 +95,13 @@ void update_star(const star_t *star) {
    }
 }
 
-void update_screen(const player_t *player, star_t *stars, int stars_count, const int time_left) {
+void update_hunter(const hunter_t *hunter) {
+ if (hunter->is_active) {
+  mvwprintw(game_window, (int)hunter->hunter_pos.y, (int)hunter->hunter_pos.x, "%c", 'H');
+ }
+}
+
+void update_screen(const player_t *player, const star_t *stars, const hunter_t *hunter, int stars_count, const int time_left) {
   werase(game_window);
   box(game_window, 0, 0);
 
@@ -113,6 +119,12 @@ void update_screen(const player_t *player, star_t *stars, int stars_count, const
 
   }
 
+ for (int i = 0; i < MAX_AMM_HUNTERS; i++) {
+
+  update_hunter(&hunter[i]);
+
+ }
+
   update_status(player, status_window, stars_count, time_left);
 
   wrefresh(game_window);
@@ -121,8 +133,9 @@ void update_screen(const player_t *player, star_t *stars, int stars_count, const
  }
 
 
-void game_over(const player_t *player, const star_t *stars) {
+void game_over() {
  werase(game_window);
  werase(status_window);
-
+ mvwprintw(game_window, COLS/2, LINES/2, "GAME OVER\n PRESS ANY KEY TO CONTINUE...");
+ getch();
 }

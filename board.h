@@ -45,6 +45,6 @@ void update_star(const star_t *star);
 
 void update_player(const player_t *player, WINDOW *window, int current_frame);
 
-void update_screen(const player_t *player, star_t *stars, int stars_count, const int time_left);
+void update_screen(const player_t *player, const star_t *stars,  const hunter_t *hunter, int stars_count, const int time_left);
 
-void game_over(const player_t *player, const star_t *stars);
+void game_over();

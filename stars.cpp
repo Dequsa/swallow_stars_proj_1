@@ -17,17 +17,17 @@ void stars_init(star_t *star) {
 
 
 void stars_spawn (star_t *star, int *stars_count) {
-
-    for (int i = 0; i < MAX_AMM_STARS; i++) {
-        if (star[i].is_active == FALSE && rand() % 10 <= 3) {
-            star[i].is_active = TRUE;
-            star[i].position.x = rand() % (COLS - 2);
-            star[i].position.y = 1.0f;
-            star[i].velocity = (float)(rand() % 5) + 1.0f;
-            (*stars_count)++;
-            return;
+    if (rand() % 10 <= 2) {
+        for (int i = 0; i < MAX_AMM_STARS; i++) {
+            if (star[i].is_active == FALSE && rand() % 10 <= 2) {
+                star[i].is_active = TRUE;
+                star[i].position.x = rand() % (COLS - 2) + 1; // -2 is borders
+                star[i].position.y = 1.0f;
+                star[i].velocity = (float)(rand() % 5) + 1.0f; // 1 is for rand == 0
+                (*stars_count)++;
+                return;
+            }
         }
-
     }
 }
 
@@ -58,7 +58,6 @@ void stars_collect(star_t *star, player_t *player, int *stars_count) {
             star[i].velocity = 0.0f;
             (*stars_count)--;
             player->stars_collected++;
-
         }
     }
 }
