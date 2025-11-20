@@ -12,50 +12,19 @@ void hunter_move(hunter_t *hunter, player_t *player) {
 
 }
 
-void hunter_init(hunter_t *hunter) {
+void hunter_init(hunter_t *hunter, type_t *type) {
     for (int i = 0; i < MAX_AMM_HUNTERS; i++) {
+
         hunter[i].hunter_type = rand() % 5;
+
+        const unsigned int h_type = hunter[i].hunter_type;
+
         hunter[i].bounces_done = 0;
         hunter[i].is_active = FALSE;
-        switch (hunter[i].hunter_type) {
-            case 0: {
-                hunter[i].hunter_dmg = 5;
-                hunter[i].bounces_left = rand() % 3;
-                hunter[i].width = 1;
-                hunter[i].height = 2;
-                break;
-            }
-            case 1: {
-                hunter[i].hunter_dmg = 10;
-                hunter[i].bounces_left = rand() % 4;
-                hunter[i].width = 2;
-                hunter[i].height = 1;
-                break;
-            }
-            case 2: {
-                hunter[i].hunter_dmg = 15;
-                hunter[i].bounces_left = rand() % 6;
-                hunter[i].width = 1;
-                hunter[i].height = 3;
-                break;
-            }
-            case 3: {
-                hunter[i].hunter_dmg = 20;
-                hunter[i].bounces_left = rand() % 8;
-                hunter[i].width = 3;
-                hunter[i].height = 1;
-                break;
-            }
-                case 4: {
-                hunter[i].hunter_dmg = 25;
-                hunter[i].bounces_left = rand() % 9;
-                hunter[i].width = 2;
-                hunter[i].height = 2;
-                break;
-            }
-
-            default: { break;}
-        }
+        hunter[i].hunter_dmg = type[h_type].dmg;
+        hunter[i].bounces_left = rand() % type[h_type].bounces_max;
+        hunter[i].width = type[h_type].size.width;
+        hunter[i].height = type[h_type].size.height;
     }
 }
 
@@ -66,19 +35,19 @@ void hunter_spawn(hunter_t *hunter) {
             if (hunter[i].is_active == FALSE) {
                 if (rand()%4 == 1) {
                     hunter[i].is_active = TRUE;
-                    hunter[i].hunter_pos.x = rand() % COLS;
-                    hunter[i].hunter_pos.y = hunter->height;
+                    hunter[i].hunter_pos.x = (float)(rand() % COLS);
+                    hunter[i].hunter_pos.y = (float)hunter->height;
                 }else if (rand()%4 == 0) {
                     hunter[i].is_active = TRUE;
-                    hunter[i].hunter_pos.x = hunter->width;
+                    hunter[i].hunter_pos.x = (float)hunter->width;
                     hunter[i].hunter_pos.y = rand() % LINES;
                 }else if (rand()%4 == 2) {
                     hunter[i].is_active = TRUE;
-                    hunter[i].hunter_pos.x = rand() % COLS;
+                    hunter[i].hunter_pos.x = (float)(rand() % COLS);
                     hunter[i].hunter_pos.y = PLAYABLE_AREA_SIZE_Y - hunter->height;
                 }else if (rand()%4 == 3) {
                     hunter[i].is_active = TRUE;
-                    hunter[i].hunter_pos.x = COLS - hunter->width;
+                    hunter[i].hunter_pos.x = (float)COLS - hunter->width;
                     hunter[i].hunter_pos.y = rand() % LINES - hunter->height;
                 }
                 return;

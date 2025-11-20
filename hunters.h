@@ -18,6 +18,8 @@ typedef struct {
     unsigned short is_active;
     int width;
     int height;
+    float target_player_location_x;
+    float target_player_location_y;
     position_t hunter_pos;
 }hunter_t;
 
@@ -32,7 +34,7 @@ typedef struct {
     }size;
 }type_t;
 
-void hunter_init(hunter_t *hunter);
+void hunter_init(hunter_t *hunter, type_t *type);
 
 void hunter_spawn(hunter_t *hunter);
 
