@@ -8,6 +8,11 @@
 #define MAX_HUNTER_TYPES_MAX 5
 #endif //SWALLOW_GAME_PROJ_1_HUNTERS_H
 
+typedef struct {
+    float x;
+    float y;
+}velocity_t;
+
 
 typedef struct {
     int bounces_left;
@@ -18,9 +23,9 @@ typedef struct {
     unsigned short is_active;
     int width;
     int height;
-    float target_player_location_x;
-    float target_player_location_y;
+    position_t target_pos;
     position_t hunter_pos;
+    velocity_t hunter_velocity;
 }hunter_t;
 
 typedef struct {
@@ -36,10 +41,10 @@ typedef struct {
 
 void hunter_init(hunter_t *hunter, type_t *type);
 
-void hunter_spawn(hunter_t *hunter);
+void hunter_spawn(hunter_t *hunter, const player_t *player);
 
-void hunter_update(hunter_t *hunter, player_t *player);
+void hunter_update(hunter_t *hunter, const player_t *player);
 
 void hunter_dmg(hunter_t *hunter, player_t *player);
 
-void hunter_move(hunter_t *hunter, player_t *player);
+void hunter_move(const hunter_t *hunter, const player_t *player);

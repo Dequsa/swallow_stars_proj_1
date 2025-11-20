@@ -23,8 +23,6 @@ typedef struct {
     position_t position;
 }star_t;
 
-
-
 void stars_init(star_t *star);
 
 void stars_spawn(star_t *star, int *stars_count);

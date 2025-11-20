@@ -5,7 +5,7 @@
 #define HUNTER_TYPE_AMM 5
 #include <cstring>
 #define CONFIG_PATH_STATS "../CONFIGS/stats.cfg"
-#define CONFIG_PATH_HUNTERS "../CONFIGS/hunters.cfg"
+#define CONFIG_PATH_HUNTERS "../CONFIGS/hunters..cfg"
 #define CONFIG_SUCCESS 0
 #define CONFIG_ERR (-1)
 #define CONFIG_ERR_NULLPTR (-2)
@@ -18,7 +18,7 @@ int load_config_player(player_t *player) {
 
     if (fptr == nullptr) {
         mvwprintw(game_window, LINES / 2 - 1, COLS / 2 - 1, "Config stats.cfg not found...");
-        return CONFIG_ERR;
+        return CONFIG_ERR_NULLPTR;
 
     }
 
@@ -29,7 +29,9 @@ int load_config_player(player_t *player) {
 
         char name_of_variable_config[MAX_LINE_SIZE];
 
-        if (const int temp_line = sscanf(current_line, "%d @%s", &result, name_of_variable_config); strcmp(name_of_variable_config, "MAX_HEALTH") == 0 && temp_line == 2) {
+        const int temp_line = sscanf(current_line, "%d @%s", &result, name_of_variable_config);
+
+        if (strcmp(name_of_variable_config, "MAX_HEALTH") == 0 && temp_line == 2) {
 
             player->health = result;
 
@@ -113,8 +115,10 @@ int main() {
     if (load_config_player(&player)) {
         printf("Failed to load config player\n");
         return 1;
-    } else {
-        printf("Config loaded successfully\n");
+    }
+    if (load_config_player(&player) == CONFIG_ERR_NULLPTR) {
+        printf("Failed to load config players NULL POINTER\n");
+        return 1;
     }
 
     if (load_config_hunter(hunters, hunter_types) == CONFIG_ERR) {
@@ -123,6 +127,7 @@ int main() {
     }
     if (load_config_hunter(hunters, hunter_types) == CONFIG_ERR_NULLPTR) {
         printf("Failed to load config hunters NULL POINTER\n");
+        return 1;
     }
 
     init_board(&board);
@@ -147,7 +152,7 @@ int main() {
         //--------------------------------------
 
         //----------------HUNTERS---------------
-        hunter_spawn(hunters);
+        hunter_spawn(hunters, &player);
         hunter_update(hunters, &player);
         //--------------------------------------
 

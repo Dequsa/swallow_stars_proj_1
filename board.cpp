@@ -33,42 +33,43 @@ void init_board(board_t *board) { // initialize everything for the board and sta
 
 }
 
+
 void update_status(const player_t *player, WINDOW *window, int stars_count, const int time_left) { // update health and score
-  werase(status_window);
+
+ werase(status_window);
   box(status_window, 0, 0);
 
   const int time_left_seen = time_left / 60;
 
   const float text_max_pos = COLS - 40;
 
-  //mvwprintw(status_window, 1, 2, "MAX SPEED: %d", player->max_speed);
   mvwprintw(status_window, 1, (int)(text_max_pos * 0.20f), "CURRENT SPEED: %d", player->current_speed);
-  //mvwprintw(status_window, 1, 40, "CURRENT HEADING: d", player->current_heading);
   mvwprintw(status_window, 1, (int)(text_max_pos * 0.45f), "CURRENT HEALTH: %d", player->health);
-  //mvwprintw(status_window, 1, 80, "CURRENT X: %f", player->coordinates.x);
-  //mvwprintw(status_window, 1, 100, "CURRENT Y: %f", player->coordinates.y);
-  //mvwprintw(status_window, 1, 120, "Lines: %d COLS: %d",game_height, game_width);
-  //mvwprintw(status_window, 1, 140, "STARS COUNT: %d", stars_count);
   mvwprintw(status_window, 1, (int)(text_max_pos * 0.70f), "STARS COLLECTED: %d", player->stars_collected);
-  //mvwprintw(status_window, 1, (int)(text_max_pos * 0.95f), "Timeleft: %d sec.", time_left_seen);
+
   init_pair(1, COLOR_GREEN, COLOR_BLACK);
+
   wattron(status_window, COLOR_PAIR(1));
   mvwprintw(status_window, 1, (int)(text_max_pos * 0.95f), "Timeleft: %d sec.", time_left_seen);
   wattroff(status_window, COLOR_PAIR(1));
+
  if (time_left_seen > 20 && time_left_seen <= 60) {
+
   init_pair(1, COLOR_YELLOW, COLOR_BLACK);
+
   wattron(status_window, COLOR_PAIR(1));
   mvwprintw(status_window, 1, (int)(text_max_pos * 0.95f), "Timeleft: %d sec.", time_left_seen);
   wattroff(status_window, COLOR_PAIR(1));
+
  } else if (time_left_seen >= 0) {
+
   init_pair(1, COLOR_RED, COLOR_BLACK);
+
   wattron(status_window, COLOR_PAIR(1));
   mvwprintw(status_window, 1, (int)(text_max_pos * 0.95f), "Timeleft: %d sec.", time_left_seen);
   wattroff(status_window, COLOR_PAIR(1));
 
  }
-
-
   wrefresh(status_window);
  }
 
@@ -95,11 +96,17 @@ void update_star(const star_t *star) {
    }
 }
 
+
 void update_hunter(const hunter_t *hunter) {
  if (hunter->is_active) {
+  //  for (int i = 0; i < hunter->height; i++) {
+  //   for (int j = 0; j < hunter->width; j++) {
   mvwprintw(game_window, (int)hunter->hunter_pos.y, (int)hunter->hunter_pos.x, "%c", 'H');
+  //   }
+  //  }
  }
 }
+
 
 void update_screen(const player_t *player, const star_t *stars, const hunter_t *hunter, int stars_count, const int time_left) {
   werase(game_window);

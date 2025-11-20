@@ -5,10 +5,10 @@
 #ifndef SWALLOW_GAME_PROJ_1_BOARD_H
 #define SWALLOW_GAME_PROJ_1_BOARD_H
 
-#include "player.h"
 #include <curses.h>
 #include <cstdlib>
 #include <ctime>
+#include "player.h"
 #include "stars.h"
 #include "hunters.h"
 
@@ -30,10 +30,6 @@ typedef struct {
     unsigned int star_quota;
 } board_t;
 
-typedef struct {
-
-
-} status_line_t;
 
 void init_board(board_t *board);
 
