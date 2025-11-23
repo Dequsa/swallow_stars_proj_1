@@ -25,9 +25,9 @@ extern WINDOW *game_over_window;
 typedef struct {
     unsigned long current_seed;
     bool is_over;
-    //int size_x;
-    //int size_y;
     unsigned int star_quota;
+    int max_hunters;
+    int current_amm_of_hunters_on_board;
 } board_t;
 
 

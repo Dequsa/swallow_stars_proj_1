@@ -6,42 +6,6 @@
 
 #define PLAYER_SPRITE_WIDTH 4
 
-// void load_config_player(player_t *player) {
-//     FILE *fptr = nullptr;
-//     fptr = fopen("./CONFIGS/stats.cfg", "r");
-//
-//     if (fptr == nullptr) {
-//         std::cout << "Failed to open config file..." << std::endl;
-//     }
-//
-//     int result = 0;
-//     char current_line[MAX_LINE_SIZE];
-//
-//     while (fgets( current_line, MAX_LINE_SIZE, fptr)) {
-//
-//         char name_of_variable_config[MAX_LINE_SIZE];
-//
-//         int temp_line = sscanf(current_line, "%d @%s", &result, name_of_variable_config);
-//
-//         if (strcmp(name_of_variable_config, "MAX_HEALTH") == 0 && temp_line > 0) {
-//
-//             player->health = result;
-//
-//         }else if (strcmp(name_of_variable_config, "MAX_SPEED") == 0 && temp_line > 0) {
-//
-//             player->max_speed = result;
-//
-//         }else if (strcmp(name_of_variable_config, "MIN_SPEED") == 0 && temp_line > 0) {
-//
-//             player->min_speed = result;
-//
-//         }
-//     }
-//
-//     fclose(fptr);
-// }
-
-
 void init_player(player_t *player) {
 
     player->coordinates.x = (float)COLS/2; // middle of the screen x
@@ -49,6 +13,7 @@ void init_player(player_t *player) {
     player->current_speed = 0;
     player->current_heading = UP;
     player->stars_collected = 0;
+    player->current_amm_of_hunters_on_board = 0;
 
 
     const char temp_sprite_1[] = "\\/\\/\0";

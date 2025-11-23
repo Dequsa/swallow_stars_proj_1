@@ -1,15 +1,16 @@
 #include <iostream>
 #include "board.h" // connects all libs together
-#define TIME_LEFT 7200 // 2min
-
-#define HUNTER_TYPE_AMM 5
 #include <cstring>
 #define CONFIG_PATH_STATS "../CONFIGS/stats.cfg"
 #define CONFIG_PATH_HUNTERS "../CONFIGS/hunters..cfg"
+#define CONFIG_PATH_BOARD "../CONFIGS/board..cfg"
 #define CONFIG_SUCCESS 0
 #define CONFIG_ERR (-1)
 #define CONFIG_ERR_NULLPTR (-2)
 #define LAST_LEVEL_NUMBER 5;
+#define EVO_TIME 1
+#define EVO_LVL 1
+#define TIME_LEFT 7200 // 2min
 
 
 int load_config_player(player_t *player) {
@@ -40,9 +41,7 @@ int load_config_player(player_t *player) {
             player->max_speed = result;
 
         }else if (strcmp(name_of_variable_config, "MIN_SPEED") == 0 && temp_line == 2) {
-
             player->min_speed = result;
-
         }
     }
 
@@ -98,6 +97,50 @@ int load_config_hunter(hunter_t *hunter, type_t *type) {
 }
 
 
+int load_config_board(board_t *board) {
+
+    FILE *fptr = nullptr;
+    fptr = fopen(CONFIG_PATH_BOARD, "r");
+    if (fptr == nullptr) {
+        return CONFIG_ERR_NULLPTR;
+    }
+
+    int result = 0;
+
+    char current_line[MAX_LINE_SIZE];
+    int current_assign_number = -1;
+    while (fgets( current_line, MAX_LINE_SIZE, fptr)) {
+
+        char name_of_variable_board[MAX_LINE_SIZE];
+
+        int temp_line = sscanf(current_line, "%d @%s", &result, name_of_variable_board);
+
+        if (temp_line != 2) {
+            continue;
+        }
+
+        if (strcmp(name_of_variable_board, "LEVEL_ID") == 0) {
+            current_assign_number = result;
+        }
+
+        if (current_assign_number == -1) {
+            return CONFIG_ERR;
+        }
+
+
+        if (strcmp(name_of_variable_board, "MAX_HUNTERS") == 0) {
+        } else if (strcmp(name_of_variable_board, "EVALUATION_TIME") == 0) {
+
+        }else if (strcmp(name_of_variable_board, "EVALUATION_DIFFICULTY") == 0) {
+
+        }else if (strcmp(name_of_variable_board, "STAR_QUOTA") == 0) {
+
+        }
+    }
+    fclose(fptr);
+    return CONFIG_SUCCESS;
+}
+
 
 int main() {
     star_t stars[MAX_AMM_STARS];
@@ -142,6 +185,7 @@ int main() {
     board.star_quota = 10;
     int stars_count = 0;
     int time_left = TIME_LEFT;
+    int max_hunters_on_board = 3 * EVO_LVL * EVO_TIME;
     while (!board.is_over) {
 
         //----------------STARS-----------------

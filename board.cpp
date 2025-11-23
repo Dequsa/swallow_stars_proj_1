@@ -99,11 +99,21 @@ void update_star(const star_t *star) {
 
 void update_hunter(const hunter_t *hunter) {
  if (hunter->is_active) {
-  //  for (int i = 0; i < hunter->height; i++) {
-  //   for (int j = 0; j < hunter->width; j++) {
-  mvwprintw(game_window, (int)hunter->hunter_pos.y, (int)hunter->hunter_pos.x, "%c", 'H');
-  //   }
-  //  }
+  for (int i = 0; i < hunter->height; i++) {
+   for (int j = 0; j < hunter->width; j++) {
+
+    const int h_x = (int)hunter->hunter_pos.x + i;
+    const int h_y = (int)hunter->hunter_pos.y + j;
+
+    mvwprintw(game_window, h_y, h_x, "%c", 'H');
+
+    if (i == hunter->width / 2 ) {
+     const int display_bounces = hunter->bounces_left - hunter->bounces_done;
+     mvwprintw(game_window, h_y - 1, h_x, "%d", display_bounces);
+
+    }
+   }
+  }
  }
 }
 
@@ -141,8 +151,21 @@ void update_screen(const player_t *player, const star_t *stars, const hunter_t *
 
 
 void game_over() {
+
+ nocbreak(); // stop the buffer input is real-time
+ echo(); // do not show current input
+ curs_set(1); // disable cursor display
+ nodelay(stdscr, FALSE); // non blocking input
+ keypad(stdscr, FALSE); //enable arrows
+
+ werase(game_window);
+ mvwprintw(game_window, COLS/2, LINES/2, "GAME OVER\n PRESS ANY KEY TO CONTINUE...");
+ wrefresh(game_window);
+ getch();
+
+
  werase(game_window);
  werase(status_window);
- mvwprintw(game_window, COLS/2, LINES/2, "GAME OVER\n PRESS ANY KEY TO CONTINUE...");
- getch();
+
+ endwin();
 }

@@ -20,6 +20,7 @@ typedef struct {
     int time_survived;
     char frame_one[PLAYER_SPRITE_SIZE + 1];
     char frame_two[PLAYER_SPRITE_SIZE + 1];
+    int current_amm_of_hunters_on_board;
     struct coordinates {
         float x;
         float y;
