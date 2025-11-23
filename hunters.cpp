@@ -104,15 +104,11 @@ void hunter_spawn(hunter_t *hunter, player_t *player) {
 }
 
 
-// void hunter_despawn()
-
 void hunter_update(hunter_t *hunter, player_t *player) {
 
     for (int i = 0; i < MAX_AMM_HUNTERS; i++) {
 
         if (hunter[i].is_active == TRUE) {
-            int h_new_x;
-            int h_new_y;
 
             hunter_move(&hunter[i], player);
             hunter_bounce(&hunter[i]);
