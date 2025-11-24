@@ -29,7 +29,7 @@ void init_board(board_t *board) { // initialize everything for the board and sta
      //game_area_window = derwin(game_window, game_height - 2, game_width - 2, 1, 1);
      status_window = newwin(status_height, status_width, game_height, 0);
 
-
+     board->is_over = FALSE;
 
 }
 
@@ -159,13 +159,27 @@ void game_over() {
  keypad(stdscr, FALSE); //enable arrows
 
  werase(game_window);
- mvwprintw(game_window, COLS/2, LINES/2, "GAME OVER\n PRESS ANY KEY TO CONTINUE...");
+ mvwprintw(game_window, LINES/2, COLS/2, "GAME OVER...");
+ mvwprintw(game_window, LINES/2 + 1, COLS/2, "PRESS ANY BUTTON TO CONTINUE");
  wrefresh(game_window);
- getch();
+
+ getch(); // Wait indefinitely until a key is pressed
 
 
  werase(game_window);
  werase(status_window);
 
  endwin();
+}
+
+void show_lvl_complete(const int current_lvl) {
+
+ werase(game_window);
+ mvwprintw(game_window, LINES/2, COLS/2, "%d COMPLETED", current_lvl + 1);
+ mvwprintw(game_window, LINES/2 + 1, COLS/2, "PRESS ANY BUTTON TO CONTINUE");
+ wrefresh(game_window);
+ nodelay(stdscr, FALSE);
+ getch();
+ nodelay(stdscr, TRUE);
+
 }

@@ -11,6 +11,7 @@
 #endif //SWALLOW_GAME_PROJ_1_PLAYER_H
 
 typedef struct {
+    int max_health;
     int health; // CONFIG FILE
     int current_heading; // 0 down 1 up 2 left 3 right
     int current_speed;
@@ -21,6 +22,7 @@ typedef struct {
     char frame_one[PLAYER_SPRITE_SIZE + 1];
     char frame_two[PLAYER_SPRITE_SIZE + 1];
     int current_amm_of_hunters_on_board;
+    int max_hunters_on_board;
     struct coordinates {
         float x;
         float y;

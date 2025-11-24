@@ -3,14 +3,11 @@
 #include <cstring>
 #define CONFIG_PATH_STATS "../CONFIGS/stats.cfg"
 #define CONFIG_PATH_HUNTERS "../CONFIGS/hunters..cfg"
-#define CONFIG_PATH_BOARD "../CONFIGS/board..cfg"
+#define CONFIG_PATH_BOARD "../CONFIGS/board.cfg"
 #define CONFIG_SUCCESS 0
 #define CONFIG_ERR (-1)
 #define CONFIG_ERR_NULLPTR (-2)
-#define LAST_LEVEL_NUMBER 5;
-#define EVO_TIME 1
-#define EVO_LVL 1
-#define TIME_LEFT 7200 // 2min
+#define LEVEL_AMM 5
 
 
 int load_config_player(player_t *player) {
@@ -34,7 +31,7 @@ int load_config_player(player_t *player) {
 
         if (strcmp(name_of_variable_config, "MAX_HEALTH") == 0 && temp_line == 2) {
 
-            player->health = result;
+            player->max_health = result;
 
         }else if (strcmp(name_of_variable_config, "MAX_SPEED") == 0 && temp_line == 2) {
 
@@ -49,7 +46,7 @@ int load_config_player(player_t *player) {
     return CONFIG_SUCCESS;
 }
 
-int load_config_hunter(hunter_t *hunter, type_t *type) {
+int load_config_hunter(type_t *type) {
 
     FILE *fptr = nullptr;
     fptr = fopen(CONFIG_PATH_HUNTERS, "r");
@@ -96,8 +93,7 @@ int load_config_hunter(hunter_t *hunter, type_t *type) {
     return CONFIG_SUCCESS;
 }
 
-
-int load_config_board(board_t *board) {
+int load_config_board(board_t *boards_cache) {
 
     FILE *fptr = nullptr;
     fptr = fopen(CONFIG_PATH_BOARD, "r");
@@ -129,11 +125,20 @@ int load_config_board(board_t *board) {
 
 
         if (strcmp(name_of_variable_board, "MAX_HUNTERS") == 0) {
+
+            boards_cache[current_assign_number].max_hunters = result;
+
         } else if (strcmp(name_of_variable_board, "EVALUATION_TIME") == 0) {
+
+            boards_cache[current_assign_number].eva_time = result;
 
         }else if (strcmp(name_of_variable_board, "EVALUATION_DIFFICULTY") == 0) {
 
+            boards_cache[current_assign_number].eva_lvl = result;
+
         }else if (strcmp(name_of_variable_board, "STAR_QUOTA") == 0) {
+
+            boards_cache[current_assign_number].star_quota = result;
 
         }
     }
@@ -141,16 +146,35 @@ int load_config_board(board_t *board) {
     return CONFIG_SUCCESS;
 }
 
+void level_complete(board_t *board, const board_t *boards_cache ,player_t *player, const int current_lvl, hunter_t *hunters) {
+
+    board->max_hunters = boards_cache[current_lvl].max_hunters;
+    board->star_quota = boards_cache[current_lvl].star_quota;
+    board->eva_lvl = boards_cache[current_lvl].eva_lvl;
+    board->time_left = boards_cache[current_lvl].time_left * FPS;
+    board->is_over = FALSE;
+
+    player->health = player->max_health;
+    player->coordinates.x = COLS / 2;
+    player->coordinates.y = LINES / 2;
+    player->max_hunters_on_board = board->max_hunters;
+
+    hunter_spawn(hunters, player);
+
+    if (current_lvl > 0) {
+        show_lvl_complete(current_lvl);
+    }
+}
 
 int main() {
     star_t stars[MAX_AMM_STARS];
     hunter_t hunters[MAX_AMM_HUNTERS];
     type_t hunter_types[HUNTER_TYPE_AMM];
     board_t board;
+    board_t boards_cache[LEVEL_AMM];
     player_t player;
-    timespec req;
-    timespec rem;
-    unsigned short current_level = 0;
+    timespec req{};
+    timespec rem{};
 
     const unsigned long seed = time(nullptr);
     srand(seed);
@@ -159,73 +183,86 @@ int main() {
         printf("Failed to load config player\n");
         return 1;
     }
-    if (load_config_player(&player) == CONFIG_ERR_NULLPTR) {
-        printf("Failed to load config players NULL POINTER\n");
-        return 1;
-    }
+    // if (load_config_player(&player) == CONFIG_ERR_NULLPTR) {
+    //     printf("Failed to load config players NULL POINTER\n");
+    //     return 1;
+    // }
 
-    if (load_config_hunter(hunters, hunter_types) == CONFIG_ERR) {
+    if (load_config_hunter(hunter_types) == CONFIG_ERR || load_config_hunter(hunter_types) == CONFIG_ERR_NULLPTR) {
         printf("Failed to load config hunters\n");
         return 1;
     }
-    if (load_config_hunter(hunters, hunter_types) == CONFIG_ERR_NULLPTR) {
-        printf("Failed to load config hunters NULL POINTER\n");
+    // if (load_config_hunter(hunters, hunter_types) == CONFIG_ERR_NULLPTR) {
+    //     printf("Failed to load config hunters NULL POINTER\n");
+    //     return 1;
+    // }
+
+    if (load_config_board(boards_cache) == CONFIG_ERR || load_config_board(boards_cache) == CONFIG_ERR_NULLPTR) {
+        printf("Failed to load config board\n");
         return 1;
     }
+    // if (load_config_board(hunters, hunter_types) == CONFIG_ERR_NULLPTR) {
+    //     printf("Failed to load config hunters NULL POINTER\n");
+    //     return 1;
+    // }
 
     init_board(&board);
     init_player(&player);
     stars_init(stars);
     hunter_init(hunters, hunter_types);
 
-    req.tv_nsec = 16666666;
+    req.tv_nsec = 16666666; // approx. 60fps
     req.tv_sec = 0;
 
     // main game loop
-    board.star_quota = 10;
     int stars_count = 0;
-    int time_left = TIME_LEFT;
-    int max_hunters_on_board = 3 * EVO_LVL * EVO_TIME;
-    while (!board.is_over) {
+    int current_level = 0;
+    for (int i = 0 ; i < LEVEL_AMM; i++) {
 
-        //----------------STARS-----------------
-        stars_spawn(&stars[stars_count], &stars_count);
-        if (stars_count == MAX_AMM_STARS) stars_count = 0;
-        stars_update(stars, &stars_count);
-        stars_collect(stars, &player , &stars_count);
-        //--------------------------------------
+        level_complete(&board, boards_cache, &player, current_level, hunters);
 
-        //----------------HUNTERS---------------
-        hunter_spawn(hunters, &player);
-        hunter_update(hunters, &player);
-        //--------------------------------------
+        while (!board.is_over) {
+
+            //----------------STARS-----------------
+            stars_spawn(&stars[stars_count], &stars_count);
+            if (stars_count == MAX_AMM_STARS) stars_count = 0;
+            stars_update(stars, &stars_count);
+            stars_collect(stars, &player , &stars_count);
+            //--------------------------------------
+
+            //----------------HUNTERS---------------
+            // hunter_spawn(hunters, &player);gi
+            hunter_spawn(hunters, &player);
+            hunter_update(hunters, &player);
+            //--------------------------------------
 
 
-        //----------------PLAYER----------------
-        move_player(&player);
-        //--------------------------------------
-        // log input into a file must add
+            //----------------PLAYER----------------
+            move_player(&player);
+            //--------------------------------------
+            // log input into a file must add
 
-        update_screen(&player, stars, hunters,stars_count, time_left);
+            update_screen(&player, stars, hunters,stars_count, board.time_left);
 
-        nanosleep(&req, &rem);
+            nanosleep(&req, &rem);
 
-        time_left--;
+            board.time_left--;
 
-        if (time_left <= 0) {
-            board.is_over = TRUE;
-        }else if (player.stars_collected == board.star_quota) {
-            board.is_over = TRUE;
+            if (board.time_left <= 0) {
+                board.is_over = TRUE;
+            }else if (player.stars_collected == board.star_quota) {
+                break;
+            }
+
         }
 
-        // if (level_complete()) {
-        //     current_level++;
-        // }
-        // if (current_level > LAST_LEVEL_NUMBER) {
-        //
-        // }
+        current_level++;
+
+        level_complete(&board, boards_cache, &player, current_level, hunters);
+
     }
-    game_over(); //- saving score end menu etc. // save seed
+
+    game_over(); //- saving score end menu etc.
 
     return 0;
 }

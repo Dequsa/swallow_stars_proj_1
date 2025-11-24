@@ -4,7 +4,7 @@
 
 #ifndef SWALLOW_GAME_PROJ_1_HUNTERS_H
 #define SWALLOW_GAME_PROJ_1_HUNTERS_H
-#define MAX_AMM_HUNTERS 20 // 2 easy 2 med-easy 2 med-hard 2 hard 2 hard-hard
+#define MAX_AMM_HUNTERS 20 // 4 easy 4 med-easy 4 med-hard 4 hard 4 hard-hard
 #define HUNTER_TYPE_AMM 5
 #endif //SWALLOW_GAME_PROJ_1_HUNTERS_H
 
@@ -23,6 +23,7 @@ typedef struct {
     int width;
     int height;
     int spawn_chance;
+    int cooldown;
     position_t target_pos;
     position_t hunter_pos;
     velocity_t vel;

@@ -28,6 +28,9 @@ typedef struct {
     unsigned int star_quota;
     int max_hunters;
     int current_amm_of_hunters_on_board;
+    int eva_time;
+    int eva_lvl;
+    int time_left;
 } board_t;
 
 
@@ -44,3 +47,5 @@ void update_player(const player_t *player, WINDOW *window, int current_frame);
 void update_screen(const player_t *player, const star_t *stars,  const hunter_t *hunter, int stars_count, const int time_left);
 
 void game_over();
+
+void show_lvl_complete(const int current_lvl);
