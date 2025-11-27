@@ -3,7 +3,6 @@
 //
 #include <iostream>
 #include "board.h"
-
 #define PLAYER_SPRITE_WIDTH 3
 
 void init_player(player_t *player) {

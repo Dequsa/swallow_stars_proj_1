@@ -184,6 +184,7 @@ int main() {
     board_t board;
     board_t boards_cache[LEVEL_AMM];
     player_t player;
+    taxi_t taxi;
     timespec req{};
     timespec rem{};
 
@@ -237,7 +238,7 @@ int main() {
 
         while (!board.is_over) {
             //----------------PLAYER----------------
-            move_player(&player);
+            move_player(&player, hunters, &taxi);
             //--------------------------------------
             // log input into a file must add
 
@@ -256,7 +257,7 @@ int main() {
             const int eva_time = 1 + difficulty_adder;
 
             hunter_spawn(hunters, &player, hunter_types, eva_time);
-            hunter_update(hunters, &player);
+            hunter_update(hunters, &player, eva_time);
             //--------------------------------------
 
             update_screen(&player, stars, hunters, player_name, board.time_left, i);

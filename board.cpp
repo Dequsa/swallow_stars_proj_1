@@ -88,7 +88,7 @@ void update_player(const player_t *player, WINDOW *window, const int current_fra
 
   } else if (current_frame >= FPS/15) {
    wattron(game_window, COLOR_PAIR(2));
-   mvwprintw(game_window,(int)player->coordinates.y, (int)player->coordinates.x,"%s", player->frame_two ); // same thing here just so i dont have to write more vars
+   mvwprintw(game_window,(int)player->coordinates.y, (int)player->coordinates.x,"%s", player->frame_two ); // same thing here just so I don't have to write more
   }
   wattroff(game_window, COLOR_PAIR(2));
 }

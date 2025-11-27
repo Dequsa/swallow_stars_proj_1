@@ -8,11 +8,70 @@
 #define EVALUATION_BY_LEVEL 1
 #define EVALUATION_BY_TIME 1
 
+void calculate_vel_vec(hunter_t *hunter, const player_t *player,const int eva_time) {
+
+    hunter->target_pos.x = player->coordinates.x; // set player position "target" when hunter spawns on map
+    hunter->target_pos.y = player->coordinates.y;
+
+    const float d_x = hunter->target_pos.x - hunter->hunter_pos.x; // get delta x
+    const float d_y = hunter->target_pos.y - hunter->hunter_pos.y; // get delta y
+    const float d = sqrt(d_x * d_x + d_y * d_y); // pythagoras theorem for the length of vector pointing at player
+    const float u_x = d_x / d; // vector x of this vector
+    const float u_y = d_y / d; // vector y of this vector
+
+    const float time_multiplier = 1.0f + (eva_time - 1) * 0.10f;   // +0.1 speed every eva_time tick percentage of a lvl
+    const int range = hunter->max_speed - hunter->min_speed;
+    const float base_speed = ((hunter->min_speed + (rand() % range)) / 10.0f) * eva_time;
+    const float speed = base_speed * time_multiplier;
+
+    hunter->vel.x = u_x * speed; // speed evaluated by time and level
+    hunter->vel.y = u_y * speed;
+
+}
+
+void hunter_dash(hunter_t *hunter, player_t *player, int eva_time) {
+    float p_x = player->coordinates.x;
+    float p_y = player->coordinates.y;
+    const float d_multiplier = 1.5f;
+
+    hunter->target_pos.x = p_x;
+    hunter->target_pos.y = p_y;
+
+    calculate_vel_vec(hunter, player, eva_time * d_multiplier);
+    hunter->dash_cooldown = 10;
+}
+
+
+void check_dash(hunter_t *hunter, player_t *player, const int eva_time) {
+
+    float h_x = hunter->hunter_pos.x;
+    float h_y = hunter->hunter_pos.y;
+    float p_x = player->coordinates.x;
+    float p_y = player->coordinates.y;
+    float t_x = hunter->target_pos.x;
+    float t_y = hunter->target_pos.y;
+
+    int *h_c = &hunter->dash_cooldown;
+
+    if (*h_c <= 0
+        &&p_x != t_x
+        && p_y != t_y
+        && h_x >= p_x - 10.0f
+        && h_x <= p_x + 10.0f
+        && h_y >= p_y - 10.0f
+        && h_y <= p_y + 10.0f)
+        {
+        hunter_dash(hunter, player, eva_time);
+        }
+    if (*h_c > 0) {
+        (*h_c)--;
+    }
+}
 
 void hunter_bounce(hunter_t *hunter) {
     const float min_x = 1.0f;
     const float min_y = 1.0f;
-    const float max_x = PLAYABLE_AREA_SIZE_X - hunter->width - 1.0f;
+    const float max_x = PLAYABLE_AREA_SIZE_X - hunter->width;
     const float max_y = PLAYABLE_AREA_SIZE_Y;
 
     // x bounce
@@ -123,22 +182,7 @@ void hunter_spawn(hunter_t *hunter, player_t *player, const type_t *type, const 
 
 
                 // vector calculation
-                hunter[i].target_pos.x = player->coordinates.x; // set player position "target" when hunter spawns on map
-                hunter[i].target_pos.y = player->coordinates.y;
-
-                const float d_x = hunter[i].target_pos.x - hunter[i].hunter_pos.x; // get delta x
-                const float d_y = hunter[i].target_pos.y - hunter[i].hunter_pos.y; // get delta y
-                const float d = sqrt(d_x * d_x + d_y * d_y); // pythagoras theorem for the length of vector pointing at player
-                const float u_x = d_x / d; // vector x of this pointing vector
-                const float u_y = d_y / d; // vector y of this pointing vector
-
-                const float time_multiplier = 1.0f + (eva_time - 1) * 0.10f;   // +0.1 speed every eva_time tick percentage of a lvl
-                const int range = hunter->max_speed - hunter->min_speed;
-                const float base_speed = ((hunter->min_speed + (rand() % range)) / 10.0f) * eva_time;
-                const float speed = base_speed * time_multiplier;
-
-                hunter[i].vel.x = u_x * speed; // speed evaluated by time and level
-                hunter[i].vel.y = u_y * speed;
+                    calculate_vel_vec(&hunter[i], player, eva_time);
                 // -----------------
 
 
@@ -150,7 +194,7 @@ void hunter_spawn(hunter_t *hunter, player_t *player, const type_t *type, const 
 }
 
 
-void hunter_update(hunter_t *hunter, player_t *player) {
+void hunter_update(hunter_t *hunter, player_t *player, const int eva_time) {
 
     for (int i = 0; i < MAX_AMM_HUNTERS; i++) {
 
@@ -169,6 +213,8 @@ void hunter_update(hunter_t *hunter, player_t *player) {
         if (hunter[i].cooldown > 0) {
             hunter[i].cooldown--;
         }
+
+        check_dash(&hunter[i], player, eva_time);
     }
 }
 

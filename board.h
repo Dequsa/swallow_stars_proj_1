@@ -11,6 +11,7 @@
 #include "player.h"
 #include "stars.h"
 #include "hunters.h"
+#include "taxi.h"
 
 #define STATUS_LINE_SIZE 3 // size of status bar in lines
 #define FPS 60 // number of frames for bird animations
