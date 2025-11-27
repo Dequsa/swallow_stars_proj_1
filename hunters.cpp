@@ -73,14 +73,18 @@ void hunter_init(hunter_t *hunter, const type_t *type) {
 }
 
 
-void hunter_spawn(hunter_t *hunter, player_t *player, const type_t *type, const int eva_lvl, const int eva_time) {
+void hunter_spawn(hunter_t *hunter, player_t *player, const type_t *type, const int eva_time) {
 
         for (int i = 0; i < MAX_AMM_HUNTERS; i++) {
 
             if (rand() % 100 <= hunter[i].spawn_chance && player->current_amm_of_hunters_on_board < player->max_hunters_on_board
                 && hunter[i].is_active == FALSE && hunter[i].cooldown <= 0) {
 
-                hunter[i].bounces_left = 5;
+                const unsigned int h_type = hunter[i].hunter_type;
+
+                const int base_bounces = 1 + (rand() % type[h_type].bounces_max); //
+                hunter[i].bounces_left = base_bounces * eva_time;       // scale by eva_time & level
+
 
                 hunter[i].bounces_done = 0;
 

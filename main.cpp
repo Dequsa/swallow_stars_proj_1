@@ -136,9 +136,9 @@ int load_config_board(board_t *boards_cache) {
         //
         //     boards_cache[current_assign_number].eva_time_interval = result;
 
-        }else if (strcmp(name_of_variable_board, "EVALUATION_LEVEL") == 0) {
-
-            boards_cache[current_assign_number].eva_lvl = result;
+        // }else if (strcmp(name_of_variable_board, "EVALUATION_LEVEL") == 0) {
+        //
+        //     boards_cache[current_assign_number].eva_lvl = result;
 
         }else if (strcmp(name_of_variable_board, "STAR_QUOTA") == 0) {
 
@@ -169,7 +169,7 @@ void level_complete(board_t *board, const board_t *boards_cache ,player_t *playe
     player->max_hunters_on_board = board->max_hunters;
     player->stars_collected = 0;
 
-    hunter_spawn(hunters, player, types_hunter, board->eva_lvl, board->eva_time_interval);
+    hunter_spawn(hunters, player, types_hunter, board->eva_time_interval);
 
     if (current_lvl > 0) {
         show_lvl_complete(current_lvl);
@@ -255,7 +255,7 @@ int main() {
             const int difficulty_adder = (frames_passed * 9) / total_level_frames;
             const int eva_time = 1 + difficulty_adder;
 
-            hunter_spawn(hunters, &player, hunter_types, board.eva_lvl, eva_time);
+            hunter_spawn(hunters, &player, hunter_types, eva_time);
             hunter_update(hunters, &player);
             //--------------------------------------
 

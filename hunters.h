@@ -15,6 +15,7 @@ typedef struct {
 
 
 typedef struct {
+    unsigned short has_missed;
     unsigned short displayed;
     int bounces_left;
     unsigned int bounces_done;
@@ -47,7 +48,7 @@ typedef struct {
 
 void hunter_init(hunter_t *hunter, const type_t *type);
 
-void hunter_spawn(hunter_t *hunter, player_t *player,const type_t *type,  const int eva_lvl, const int eva_time);
+void hunter_spawn(hunter_t *hunter, player_t *player,const type_t *type, const int eva_time);
 
 void hunter_update(hunter_t *hunter, player_t *player);
 
