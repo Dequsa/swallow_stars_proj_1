@@ -87,6 +87,10 @@ int load_config_hunter(type_t *type) {
             type[current_assign_number].size.height = result;
         }else if (strcmp(name_of_variable_hunter, "SPAWN_CHANCE_PERCENT") == 0) {
             type[current_assign_number].spawn_chance = result;
+        }else if (strcmp(name_of_variable_hunter, "MAX_SPEED") == 0) {
+            type[current_assign_number].max_speed = result;
+        }else if (strcmp(name_of_variable_hunter, "MIN_SPEED") == 0) {
+            type[current_assign_number].min_speed = result;
         }
     }
     fclose(fptr);
@@ -128,11 +132,11 @@ int load_config_board(board_t *boards_cache) {
 
             boards_cache[current_assign_number].max_hunters = result;
 
-        } else if (strcmp(name_of_variable_board, "EVALUATION_TIME") == 0) {
+        // } else if (strcmp(name_of_variable_board, "EVALUATION_TIME_INTERVAL") == 0) {
+        //
+        //     boards_cache[current_assign_number].eva_time_interval = result;
 
-            boards_cache[current_assign_number].eva_time = result;
-
-        }else if (strcmp(name_of_variable_board, "EVALUATION_DIFFICULTY") == 0) {
+        }else if (strcmp(name_of_variable_board, "EVALUATION_LEVEL") == 0) {
 
             boards_cache[current_assign_number].eva_lvl = result;
 
@@ -140,31 +144,38 @@ int load_config_board(board_t *boards_cache) {
 
             boards_cache[current_assign_number].star_quota = result;
 
+        }else if (strcmp(name_of_variable_board, "TIME") == 0) {
+
+            boards_cache[current_assign_number].time_left = result;
+
         }
     }
     fclose(fptr);
     return CONFIG_SUCCESS;
 }
 
-void level_complete(board_t *board, const board_t *boards_cache ,player_t *player, const int current_lvl, hunter_t *hunters) {
+void level_complete(board_t *board, const board_t *boards_cache ,player_t *player, const int current_lvl, hunter_t *hunters, const type_t *types_hunter) {
+    board->is_over = FALSE;
 
     board->max_hunters = boards_cache[current_lvl].max_hunters;
     board->star_quota = boards_cache[current_lvl].star_quota;
     board->eva_lvl = boards_cache[current_lvl].eva_lvl;
+    // board->eva_time_interval = boards_cache[current_lvl].eva_time_interval;
     board->time_left = boards_cache[current_lvl].time_left * FPS;
-    board->is_over = FALSE;
 
     player->health = player->max_health;
     player->coordinates.x = COLS / 2;
     player->coordinates.y = LINES / 2;
     player->max_hunters_on_board = board->max_hunters;
+    player->stars_collected = 0;
 
-    hunter_spawn(hunters, player);
+    hunter_spawn(hunters, player, types_hunter, board->eva_lvl, board->eva_time_interval);
 
     if (current_lvl > 0) {
         show_lvl_complete(current_lvl);
     }
 }
+
 
 int main() {
     star_t stars[MAX_AMM_STARS];
@@ -216,12 +227,20 @@ int main() {
 
     // main game loop
     int stars_count = 0;
-    int current_level = 0;
+    char player_name[MAX_PLAYER_NAME_LENGTH];
+
+    get_player_name(player_name);
+
     for (int i = 0 ; i < LEVEL_AMM; i++) {
 
-        level_complete(&board, boards_cache, &player, current_level, hunters);
+        level_complete(&board, boards_cache, &player, i, hunters, hunter_types);
 
         while (!board.is_over) {
+            //----------------PLAYER----------------
+            move_player(&player);
+            //--------------------------------------
+            // log input into a file must add
+
 
             //----------------STARS-----------------
             stars_spawn(&stars[stars_count], &stars_count);
@@ -231,35 +250,31 @@ int main() {
             //--------------------------------------
 
             //----------------HUNTERS---------------
-            // hunter_spawn(hunters, &player);gi
-            hunter_spawn(hunters, &player);
+            const int total_level_frames = boards_cache[i].time_left * FPS;
+            const int frames_passed = total_level_frames - board.time_left;
+            const int difficulty_adder = (frames_passed * 9) / total_level_frames;
+            const int eva_time = 1 + difficulty_adder;
+
+            hunter_spawn(hunters, &player, hunter_types, board.eva_lvl, eva_time);
             hunter_update(hunters, &player);
             //--------------------------------------
 
-
-            //----------------PLAYER----------------
-            move_player(&player);
-            //--------------------------------------
-            // log input into a file must add
-
-            update_screen(&player, stars, hunters,stars_count, board.time_left);
+            update_screen(&player, stars, hunters, player_name, board.time_left, i);
 
             nanosleep(&req, &rem);
 
             board.time_left--;
 
-            if (board.time_left <= 0) {
+            if (board.time_left <= 0 || player.health <= 0) {
                 board.is_over = TRUE;
             }else if (player.stars_collected == board.star_quota) {
                 break;
             }
 
         }
-
-        current_level++;
-
-        level_complete(&board, boards_cache, &player, current_level, hunters);
-
+        if (board.is_over) {
+            break;
+        }
     }
 
     game_over(); //- saving score end menu etc.

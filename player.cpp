@@ -4,7 +4,7 @@
 #include <iostream>
 #include "board.h"
 
-#define PLAYER_SPRITE_WIDTH 4
+#define PLAYER_SPRITE_WIDTH 3
 
 void init_player(player_t *player) {
 
@@ -16,8 +16,8 @@ void init_player(player_t *player) {
     player->current_amm_of_hunters_on_board = 0;
 
 
-    const char temp_sprite_1[] = "\\/\\/\0";
-    const char temp_sprite_2[] = "/\\/\\\0";
+    const char temp_sprite_1[] = "\\V/\0";
+    const char temp_sprite_2[] = "/V\\\0";
 
     int i = 0;
     while (temp_sprite_1[i] != '\0') {
@@ -130,22 +130,6 @@ void move_player(player_t *player) {
     player->coordinates.x = new_x;
     player->coordinates.y = new_y;
 
-    // const float min_x = 1.0f;
-    // const float max_x = (float)COLS - PLAYER_SPRITE_WIDTH - 1;
-    // const float min_y = 1.0f;
-    // const float max_y = (float)LINES - STATUS_LINE_SIZE - 2.0f;
-    //
-    // if (new_x < min_x) {
-    //     new_x = min_x;
-    // }else if (new_x > max_x) {
-    //     new_x = max_x;
-    // }
-    //
-    // if (new_y < min_y) {
-    //     new_y = min_y;
-    // }else if (new_y > max_y) {
-    //     new_y = max_y;
-    // }
 }
 
 

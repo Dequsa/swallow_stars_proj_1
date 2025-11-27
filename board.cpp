@@ -34,7 +34,7 @@ void init_board(board_t *board) { // initialize everything for the board and sta
 }
 
 
-void update_status(const player_t *player, WINDOW *window, int stars_count, const int time_left) { // update health and score
+void update_status(const player_t *player, WINDOW *window,const char *name, const int time_left, const int current_lvl) { // update health and score
 
  werase(status_window);
   box(status_window, 0, 0);
@@ -43,15 +43,19 @@ void update_status(const player_t *player, WINDOW *window, int stars_count, cons
 
   const float text_max_pos = COLS - 40;
 
+  mvwprintw(status_window, 1, (int)(text_max_pos * 0.05f), "LEVEL: %d", current_lvl);
+  mvwprintw(status_window, 1, (int)(text_max_pos * 0.10f), "NAME: %s", name);
   mvwprintw(status_window, 1, (int)(text_max_pos * 0.20f), "CURRENT SPEED: %d", player->current_speed);
   mvwprintw(status_window, 1, (int)(text_max_pos * 0.45f), "CURRENT HEALTH: %d", player->health);
   mvwprintw(status_window, 1, (int)(text_max_pos * 0.70f), "STARS COLLECTED: %d", player->stars_collected);
 
+ if (time_left_seen > 60) {
   init_pair(1, COLOR_GREEN, COLOR_BLACK);
 
   wattron(status_window, COLOR_PAIR(1));
   mvwprintw(status_window, 1, (int)(text_max_pos * 0.95f), "Timeleft: %d sec.", time_left_seen);
   wattroff(status_window, COLOR_PAIR(1));
+ }
 
  if (time_left_seen > 20 && time_left_seen <= 60) {
 
@@ -61,7 +65,7 @@ void update_status(const player_t *player, WINDOW *window, int stars_count, cons
   mvwprintw(status_window, 1, (int)(text_max_pos * 0.95f), "Timeleft: %d sec.", time_left_seen);
   wattroff(status_window, COLOR_PAIR(1));
 
- } else if (time_left_seen >= 0) {
+ } else if (time_left_seen >= 0 && time_left_seen <= 20) {
 
   init_pair(1, COLOR_RED, COLOR_BLACK);
 
@@ -97,9 +101,12 @@ void update_star(const star_t *star) {
 }
 
 
-void update_hunter(const hunter_t *hunter) {
+void update_hunter(hunter_t *hunter) {
+
  if (hunter->is_active) {
+
   for (int i = 0; i < hunter->height; i++) {
+
    for (int j = 0; j < hunter->width; j++) {
 
     const int h_x = (int)hunter->hunter_pos.x + i;
@@ -107,18 +114,21 @@ void update_hunter(const hunter_t *hunter) {
 
     mvwprintw(game_window, h_y, h_x, "%c", 'H');
 
-    if (i == hunter->width / 2 ) {
+    if (j == hunter->width / 2 && hunter->displayed == FALSE) {
+     hunter->displayed = TRUE;
      const int display_bounces = hunter->bounces_left - hunter->bounces_done;
-     mvwprintw(game_window, h_y - 1, h_x, "%d", display_bounces);
+
+     mvwprintw(game_window, h_y - hunter->height, h_x, "%d", display_bounces);
 
     }
    }
   }
+  hunter->displayed = FALSE;
  }
 }
 
 
-void update_screen(const player_t *player, const star_t *stars, const hunter_t *hunter, int stars_count, const int time_left) {
+void update_screen(const player_t *player, const star_t *stars, hunter_t *hunter, const char *name, const int time_left, const int current_lvl) {
   werase(game_window);
   box(game_window, 0, 0);
 
@@ -142,7 +152,7 @@ void update_screen(const player_t *player, const star_t *stars, const hunter_t *
 
  }
 
-  update_status(player, status_window, stars_count, time_left);
+  update_status(player, status_window, name, time_left, current_lvl);
 
   wrefresh(game_window);
 
@@ -159,8 +169,10 @@ void game_over() {
  keypad(stdscr, FALSE); //enable arrows
 
  werase(game_window);
+
  mvwprintw(game_window, LINES/2, COLS/2, "GAME OVER...");
  mvwprintw(game_window, LINES/2 + 1, COLS/2, "PRESS ANY BUTTON TO CONTINUE");
+
  wrefresh(game_window);
 
  getch(); // Wait indefinitely until a key is pressed
@@ -175,11 +187,42 @@ void game_over() {
 void show_lvl_complete(const int current_lvl) {
 
  werase(game_window);
+
  mvwprintw(game_window, LINES/2, COLS/2, "%d COMPLETED", current_lvl + 1);
  mvwprintw(game_window, LINES/2 + 1, COLS/2, "PRESS ANY BUTTON TO CONTINUE");
+
  wrefresh(game_window);
+
  nodelay(stdscr, FALSE);
- getch();
+
+ timespec req{};
+ timespec rem{};
+ req.tv_nsec = 0;
+ req.tv_sec = 1; // 3s sleep so player doesn't instantly turn  off screen
+
+ nanosleep(&req, &rem);
+
+ while (getch() == -1) {
+
+ }
  nodelay(stdscr, TRUE);
+
+}
+
+void get_player_name(char *name) {
+
+ werase(game_window);
+ mvwprintw(game_window, LINES/2, COLS/2 - 10, "ENTER NAME: ");
+ wrefresh(game_window);
+
+ nodelay(stdscr, FALSE); // Blocking input
+ echo(); // Show what user types
+ curs_set(1); // Show cursor
+
+ wgetnstr(game_window, name, MAX_PLAYER_NAME_LENGTH);
+
+ noecho(); // Hide input again
+ curs_set(0); // Hide cursor
+ nodelay(stdscr, TRUE); // Non-blocking input
 
 }

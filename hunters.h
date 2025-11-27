@@ -15,6 +15,7 @@ typedef struct {
 
 
 typedef struct {
+    unsigned short displayed;
     int bounces_left;
     unsigned int bounces_done;
     unsigned int hunter_type;
@@ -24,6 +25,8 @@ typedef struct {
     int height;
     int spawn_chance;
     int cooldown;
+    int min_speed;
+    int max_speed;
     position_t target_pos;
     position_t hunter_pos;
     velocity_t vel;
@@ -34,6 +37,8 @@ typedef struct {
     int color;
     int dmg;
     int spawn_chance;
+    int min_speed;
+    int max_speed;
     struct size {
         int height;
         int width;
@@ -42,7 +47,7 @@ typedef struct {
 
 void hunter_init(hunter_t *hunter, const type_t *type);
 
-void hunter_spawn(hunter_t *hunter, player_t *player);
+void hunter_spawn(hunter_t *hunter, player_t *player,const type_t *type,  const int eva_lvl, const int eva_time);
 
 void hunter_update(hunter_t *hunter, player_t *player);
 
