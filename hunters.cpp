@@ -63,15 +63,6 @@ void check_dash(hunter_t *hunter, player_t *player, const int eva_time) {
         && h_y >= p_y - 10.0f
         && h_y <= p_y + 10.0f)
         {
-
-        // int s_c = hunter->stop_cooldown;
-        //
-        // while (s_c > 0) {
-        //     s_c--;
-        //     hunter->vel.x = 0.0f;
-        //     hunter->vel.y = 0.0f;
-        // }
-
         hunter_dash(hunter, player, eva_time);
         }
     if (*h_c > 0) {

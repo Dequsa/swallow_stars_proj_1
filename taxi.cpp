@@ -71,46 +71,7 @@ void taxi_spawn(taxi_t *taxi, const player_t *player) {
 
 void taxi_search_safe(taxi_t *taxi, const hunter_t *hunters) {
 
-        const int BOX = 5; // Size of the safe zone needed
 
-        // Stop 'BOX' units before the edge so the 5x5 area fits inside the map.
-        for (int y = 1; y <= PLAYABLE_AREA_Y - BOX; y++) {
-                for (int x = 1; x <= COLS - 1 - BOX; x++) {
-
-                        int is_safe = TRUE;
-
-                        for (int k = 0; k < MAX_AMM_HUNTERS; k++) {
-                                if (hunters[k].is_active == TRUE) {
-
-                                        // Hunter Bounding Box
-                                        int h_left = (int)hunters[k].hunter_pos.x;
-                                        int h_right = h_left + hunters[k].width;
-                                        int h_top = (int)hunters[k].hunter_pos.y;
-                                        int h_bottom = h_top + hunters[k].height;
-
-                                        // Candidate 5x5 Box
-                                        int box_left = x;
-                                        int box_right = x + BOX;
-                                        int box_top = y;
-                                        int box_bottom = y + BOX;
-
-                                        // If the boxes overlap, this spot is NOT safe.
-                                        if (box_left < h_right && box_right > h_left &&
-                                            box_top < h_bottom && box_bottom > h_top) {
-
-                                                is_safe = FALSE;
-                                                break;
-                                            }
-                                }
-                        }
-
-                        if (is_safe == TRUE) {
-                                taxi->drop_off.x = (float)x;
-                                taxi->drop_off.y = (float)y;
-                                return;
-                        }
-                }
-        }
 }
 
 

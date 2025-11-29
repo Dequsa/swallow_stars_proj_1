@@ -17,6 +17,7 @@ int check_null_pointer(const FILE* fptr) {
     return ERR_S;
 }
 
+
 int load_config_player(FILE* fptr ,player_t *player) {
 
     fptr = fopen(CFG_S, "r");
@@ -48,6 +49,7 @@ int load_config_player(FILE* fptr ,player_t *player) {
     fclose(fptr);
     return ERR_S;
 }
+
 
 int load_config_hunter(FILE* fptr, type_t *t) {
 
@@ -111,6 +113,7 @@ int load_config_hunter(FILE* fptr, type_t *t) {
     return ERR_S;
 }
 
+
 int load_config_board(FILE* fptr, board_t *boards_cache) {
 
     fptr = fopen(CONFIG_PATH_BOARD, "r");
@@ -158,6 +161,7 @@ int load_config_board(FILE* fptr, board_t *boards_cache) {
     return ERR_S;
 }
 
+
 void level_complete(board_t *board, const board_t *boards_cache ,player_t *player, const int current_lvl, hunter_t *hunters, const type_t *types_hunter) {
     board->is_over = FALSE;
 
@@ -179,6 +183,7 @@ void level_complete(board_t *board, const board_t *boards_cache ,player_t *playe
         show_lvl_complete(current_lvl);
     }
 }
+
 
 int load_configs(FILE *fptr, player_t *player, type_t *hunter_types, board_t *boards_cache ) {
 
@@ -229,6 +234,7 @@ void stars_all(int *stars_count, player_t *player, star_t *stars ){
     stars_collect(stars, player , stars_count);
 }
 
+
 void hunters_all(hunter_t *hunters, player_t *player, const type_t *hunter_types, const int cache_time_left, const int i, const int time_left ) {
 
     const int total_level_frames = cache_time_left * FPS;
@@ -240,6 +246,7 @@ void hunters_all(hunter_t *hunters, player_t *player, const type_t *hunter_types
     hunter_update(hunters, player, eva_time);
 }
 
+
 int check_over(const int time_left, const int health, int* game_over, const int collected_stars, const unsigned int star_quota) {
 
     if (time_left <= 0 || health <= 0) {
@@ -249,10 +256,52 @@ int check_over(const int time_left, const int health, int* game_over, const int 
     }else if (collected_stars == star_quota) {
 
         return 1;
-`
+
     }
 
     return 0;
+
+}
+
+
+void main_game_loop(board_t *board, board_t *boards_cache, player_t *player, hunter_t *hunters, type_t *hunter_types, star_t *stars, char* player_name )  {
+
+    timespec req{};
+    timespec rem{};
+    req.tv_nsec = 16666666; // approx. 60fps
+    req.tv_sec = 0;
+
+    int stars_count = 0;
+
+    for (int i = 0 ; i < LEVEL_AMM; i++) {
+
+        level_complete(board, boards_cache, player, i, hunters, hunter_types);
+
+        while (!board->is_over) {
+
+            move_player(player);
+
+            stars_all(&stars_count, player, stars);
+
+            hunters_all(hunters, player, hunter_types,boards_cache[i].time_left, i, board->time_left);
+
+            update_screen(player, stars, hunters, player_name, board->time_left, i);
+
+            nanosleep(&req, &rem);
+
+            board->time_left--;
+
+            if (check_over(board->time_left, player->health, &board->is_over, player->stars_collected, board->star_quota)) {
+                break;
+            }
+
+        }
+        if (board->is_over) {
+            break;
+        }
+    }
+
+    game_over();
 
 }
 
@@ -265,8 +314,6 @@ int main() {
     board_t boards_cache[LEVEL_AMM];
     player_t player;
     taxi_t taxi;
-    timespec req{};
-    timespec rem{};
 
     seed_set();
 
@@ -279,55 +326,12 @@ int main() {
     stars_init(stars);
     hunter_init(hunters, hunter_types);
 
-    req.tv_nsec = 16666666; // approx. 60fps
-    req.tv_sec = 0;
-
-    // main game loop
-    int stars_count = 0;
     char player_name[MAX_PLAYER_NAME_LENGTH];
 
     get_player_name(player_name);
 
-    for (int i = 0 ; i < LEVEL_AMM; i++) {
+    main_game_loop(&board, boards_cache, &player, hunters, hunter_types, stars, player_name);
 
-        level_complete(&board, boards_cache, &player, i, hunters, hunter_types);
-
-        while (!board.is_over) {
-            //----------------PLAYER----------------
-            move_player(&player);
-            //--------------------------------------
-            // log input into a file must add
-
-            //-----------------TAXI----------------- // WIP
-
-            //--------------------------------------
-
-
-            //----------------STARS-----------------
-            stars_all(&stars_count, &player, stars);
-            //--------------------------------------
-
-            //----------------HUNTERS---------------
-            hunters_all(hunters, &player, hunter_types,boards_cache[i].time_left, i, board.time_left);
-            //--------------------------------------
-
-            update_screen(&player, stars, hunters, player_name, board.time_left, i);
-
-            nanosleep(&req, &rem);
-
-            board.time_left--;
-
-            if (check_over(board.time_left, player.health, &board.is_over, player.stars_collected, board.star_quota)) {
-                break;
-            }
-
-        }
-        if (board.is_over) {
-            break;
-        }
-    }
-
-    game_over(); //- saving score end menu etc.
 
     return 0;
 }
