@@ -9,6 +9,7 @@
 
 typedef struct {
     int cooldown;
+    int is_active;
     position_t position;
     position_t spawn;
     velocity_t velocity;

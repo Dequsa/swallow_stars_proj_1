@@ -38,14 +38,6 @@ typedef struct {
 
 void init_board(board_t *board);
 
-//void draw_hunter();
-
-// void update_status(const player_t *player, WINDOW *window, int stars_count, const int time_left);
-//
-// void update_star(const star_t *star);
-//
-// void update_player(const player_t *player, WINDOW *window, int current_frame);
-
 void update_screen(const player_t *player, const star_t *stars, hunter_t *hunter, const char *name, const int time_left, const int current_lvl);
 
 void game_over();

@@ -1,157 +1,161 @@
 #include <iostream>
 #include "board.h" // connects all libs together
 #include <cstring>
-#define CONFIG_PATH_STATS "../CONFIGS/stats.cfg"
-#define CONFIG_PATH_HUNTERS "../CONFIGS/hunters..cfg"
+#define CFG_S "../CONFIGS/stats.cfg"
+#define CFG_H "../CONFIGS/hunters..cfg"
 #define CONFIG_PATH_BOARD "../CONFIGS/board.cfg"
-#define CONFIG_SUCCESS 0
+#define ERR_S 0
 #define CONFIG_ERR (-1)
-#define CONFIG_ERR_NULLPTR (-2)
+#define ERR_NPTR (-2)
 #define LEVEL_AMM 5
 
 
-int load_config_player(player_t *player) {
-    FILE *fptr = nullptr;
-    fptr = fopen(CONFIG_PATH_STATS, "r");
-
+int check_null_pointer(const FILE* fptr) {
     if (fptr == nullptr) {
-        mvwprintw(game_window, LINES / 2 - 1, COLS / 2 - 1, "Config stats.cfg not found...");
-        return CONFIG_ERR_NULLPTR;
-
+        return ERR_NPTR;
     }
+    return ERR_S;
+}
 
-    int result = 0;
-    char current_line[MAX_LINE_SIZE];
+int load_config_player(FILE* fptr ,player_t *player) {
 
-    while (fgets( current_line, MAX_LINE_SIZE, fptr)) {
+    fptr = fopen(CFG_S, "r");
 
-        char name_of_variable_config[MAX_LINE_SIZE];
+    if (check_null_pointer(fptr)) return ERR_NPTR;
 
-        const int temp_line = sscanf(current_line, "%d @%s", &result, name_of_variable_config);
+    int r = 0;
+    char c_l[MAX_LINE_SIZE]; // current line
 
-        if (strcmp(name_of_variable_config, "MAX_HEALTH") == 0 && temp_line == 2) {
+    while (fgets( c_l, MAX_LINE_SIZE, fptr)) {
 
-            player->max_health = result;
+        char n_o_v_c[MAX_LINE_SIZE]; // name of variable config
 
-        }else if (strcmp(name_of_variable_config, "MAX_SPEED") == 0 && temp_line == 2) {
+        const int temp_line = sscanf(c_l, "%d @%s", &r, n_o_v_c);
 
-            player->max_speed = result;
+        if (strcmp(n_o_v_c, "MAX_HEALTH") == 0 && temp_line == 2) {
 
-        }else if (strcmp(name_of_variable_config, "MIN_SPEED") == 0 && temp_line == 2) {
-            player->min_speed = result;
+            player->max_health = r;
+
+        }else if (strcmp(n_o_v_c, "MAX_SPEED") == 0 && temp_line == 2) {
+
+            player->max_speed = r;
+
+        }else if (strcmp(n_o_v_c, "MIN_SPEED") == 0 && temp_line == 2) {
+            player->min_speed = r;
         }
     }
 
     fclose(fptr);
-    return CONFIG_SUCCESS;
+    return ERR_S;
 }
 
-int load_config_hunter(type_t *type) {
+int load_config_hunter(FILE* fptr, type_t *t) {
 
-    FILE *fptr = nullptr;
-    fptr = fopen(CONFIG_PATH_HUNTERS, "r");
-    if (fptr == nullptr) {
-        return CONFIG_ERR_NULLPTR;
-    }
+    fptr = fopen(CFG_H, "r");
 
-    int result = 0;
+    if (check_null_pointer(fptr)) return ERR_NPTR;
 
-    char current_line[MAX_LINE_SIZE];
-    int current_assign_number = -1;
-    while (fgets( current_line, MAX_LINE_SIZE, fptr)) {
+    int r = 0;
 
-        char name_of_variable_hunter[MAX_LINE_SIZE];
+    char c_l[MAX_LINE_SIZE];
+    int c_a_n = -1;
+    while (fgets( c_l, MAX_LINE_SIZE, fptr)) {
 
-        int temp_line = sscanf(current_line, "%d @%s", &result, name_of_variable_hunter);
+        char n_o_v_h[MAX_LINE_SIZE]; // name of line variable hunter
+
+        int temp_line = sscanf(c_l, "%d @%s", &r, n_o_v_h);
 
         if (temp_line != 2) {
             continue;
         }
 
-        if (strcmp(name_of_variable_hunter, "HUNTER_TYPE_ID") == 0) {
-            current_assign_number = result;
+        if (strcmp(n_o_v_h, "HUNTER_TYPE_ID") == 0) {
+            c_a_n = r;
         }
 
-        if (current_assign_number == -1) {
+        if (c_a_n == -1) {
             return CONFIG_ERR;
         }
 
+        if (strcmp(n_o_v_h, "HUNTER_DMG") == 0) {
 
-        if (strcmp(name_of_variable_hunter, "HUNTER_DMG") == 0) {
-            type[current_assign_number].dmg = result;
-        } else if (strcmp(name_of_variable_hunter, "MAX_BOUNCES") == 0) {
-            type[current_assign_number].bounces_max = result;
-        }else if (strcmp(name_of_variable_hunter, "WIDTH") == 0) {
-            type[current_assign_number].size.width = result;
-        }else if (strcmp(name_of_variable_hunter, "HEIGHT") == 0) {
-            type[current_assign_number].size.height = result;
-        }else if (strcmp(name_of_variable_hunter, "SPAWN_CHANCE_PERCENT") == 0) {
-            type[current_assign_number].spawn_chance = result;
-        }else if (strcmp(name_of_variable_hunter, "MAX_SPEED") == 0) {
-            type[current_assign_number].max_speed = result;
-        }else if (strcmp(name_of_variable_hunter, "MIN_SPEED") == 0) {
-            type[current_assign_number].min_speed = result;
+            t[c_a_n].dmg = r;
+
+        } else if (strcmp(n_o_v_h, "MAX_BOUNCES") == 0) {
+
+            t[c_a_n].bounces_max = r;
+
+        }else if (strcmp(n_o_v_h, "WIDTH") == 0) {
+
+            t[c_a_n].size.width = r;
+
+        }else if (strcmp(n_o_v_h, "HEIGHT") == 0) {
+
+            t[c_a_n].size.height = r;
+
+        }else if (strcmp(n_o_v_h, "SPAWN_CHANCE_PERCENT") == 0) {
+
+            t[c_a_n].spawn_chance = r;
+
+        }else if (strcmp(n_o_v_h, "MAX_SPEED") == 0) {
+
+            t[c_a_n].max_speed = r;
+
+        }else if (strcmp(n_o_v_h, "MIN_SPEED") == 0) {
+
+            t[c_a_n].min_speed = r;
+
         }
     }
     fclose(fptr);
-    return CONFIG_SUCCESS;
+    return ERR_S;
 }
 
-int load_config_board(board_t *boards_cache) {
+int load_config_board(FILE* fptr, board_t *boards_cache) {
 
-    FILE *fptr = nullptr;
     fptr = fopen(CONFIG_PATH_BOARD, "r");
-    if (fptr == nullptr) {
-        return CONFIG_ERR_NULLPTR;
-    }
 
-    int result = 0;
+    if (check_null_pointer(fptr)) return ERR_NPTR;
 
-    char current_line[MAX_LINE_SIZE];
-    int current_assign_number = -1;
-    while (fgets( current_line, MAX_LINE_SIZE, fptr)) {
+    int r = 0;
 
-        char name_of_variable_board[MAX_LINE_SIZE];
+    char c_l[MAX_LINE_SIZE];
+    int c_a_n = -1; // current assign number
+    while (fgets( c_l, MAX_LINE_SIZE, fptr)) {
 
-        int temp_line = sscanf(current_line, "%d @%s", &result, name_of_variable_board);
+        char n_o_v_b[MAX_LINE_SIZE];
+
+        int temp_line = sscanf(c_l, "%d @%s", &r, n_o_v_b);
 
         if (temp_line != 2) {
             continue;
         }
 
-        if (strcmp(name_of_variable_board, "LEVEL_ID") == 0) {
-            current_assign_number = result;
+        if (strcmp(n_o_v_b, "LEVEL_ID") == 0) {
+            c_a_n = r;
         }
 
-        if (current_assign_number == -1) {
+        if (c_a_n == -1) {
             return CONFIG_ERR;
         }
 
 
-        if (strcmp(name_of_variable_board, "MAX_HUNTERS") == 0) {
+        if (strcmp(n_o_v_b, "MAX_HUNTERS") == 0) {
 
-            boards_cache[current_assign_number].max_hunters = result;
+            boards_cache[c_a_n].max_hunters = r;
 
-        // } else if (strcmp(name_of_variable_board, "EVALUATION_TIME_INTERVAL") == 0) {
-        //
-        //     boards_cache[current_assign_number].eva_time_interval = result;
+        }else if (strcmp(n_o_v_b, "STAR_QUOTA") == 0) {
 
-        // }else if (strcmp(name_of_variable_board, "EVALUATION_LEVEL") == 0) {
-        //
-        //     boards_cache[current_assign_number].eva_lvl = result;
+            boards_cache[c_a_n].star_quota = r;
 
-        }else if (strcmp(name_of_variable_board, "STAR_QUOTA") == 0) {
+        }else if (strcmp(n_o_v_b, "TIME") == 0) {
 
-            boards_cache[current_assign_number].star_quota = result;
-
-        }else if (strcmp(name_of_variable_board, "TIME") == 0) {
-
-            boards_cache[current_assign_number].time_left = result;
+            boards_cache[c_a_n].time_left = r;
 
         }
     }
     fclose(fptr);
-    return CONFIG_SUCCESS;
+    return ERR_S;
 }
 
 void level_complete(board_t *board, const board_t *boards_cache ,player_t *player, const int current_lvl, hunter_t *hunters, const type_t *types_hunter) {
@@ -176,6 +180,48 @@ void level_complete(board_t *board, const board_t *boards_cache ,player_t *playe
     }
 }
 
+int load_configs(FILE *fptr, player_t *player, type_t *hunter_types, board_t *boards_cache ) {
+
+    int config_err = load_config_player(fptr, player);
+
+    if (config_err != ERR_S) {
+        printf("Failed to load config player\n");
+        return 1;
+    }
+
+    config_err = load_config_hunter(fptr, hunter_types);
+
+    if (config_err != ERR_S ) {
+        printf("Failed to load config hunters\n");
+        return 1;
+    }
+
+    config_err = load_config_board(fptr, boards_cache);
+
+    if (config_err != ERR_S) {
+        printf("Failed to load config board\n");
+        return 1;
+    }
+
+
+    return 0;
+}
+
+
+void main_init() {
+
+}
+
+
+void seed_set() {
+    const unsigned long seed = time(nullptr);
+    srand(seed);
+}
+
+
+void stars() {
+
+}
 
 int main() {
     star_t stars[MAX_AMM_STARS];
@@ -188,35 +234,11 @@ int main() {
     timespec req{};
     timespec rem{};
 
-    const unsigned long seed = time(nullptr);
-    srand(seed);
+    seed_set();
 
-    if (load_config_player(&player)) {
-        printf("Failed to load config player\n");
-        return 1;
-    }
-    // if (load_config_player(&player) == CONFIG_ERR_NULLPTR) {
-    //     printf("Failed to load config players NULL POINTER\n");
-    //     return 1;
-    // }
+    FILE *fptr = nullptr;
 
-    if (load_config_hunter(hunter_types) == CONFIG_ERR || load_config_hunter(hunter_types) == CONFIG_ERR_NULLPTR) {
-        printf("Failed to load config hunters\n");
-        return 1;
-    }
-    // if (load_config_hunter(hunters, hunter_types) == CONFIG_ERR_NULLPTR) {
-    //     printf("Failed to load config hunters NULL POINTER\n");
-    //     return 1;
-    // }
-
-    if (load_config_board(boards_cache) == CONFIG_ERR || load_config_board(boards_cache) == CONFIG_ERR_NULLPTR) {
-        printf("Failed to load config board\n");
-        return 1;
-    }
-    // if (load_config_board(hunters, hunter_types) == CONFIG_ERR_NULLPTR) {
-    //     printf("Failed to load config hunters NULL POINTER\n");
-    //     return 1;
-    // }
+    load_configs(fptr, &player, hunter_types, boards_cache);
 
     init_board(&board);
     init_player(&player);
@@ -238,14 +260,20 @@ int main() {
 
         while (!board.is_over) {
             //----------------PLAYER----------------
-            move_player(&player, hunters, &taxi);
+            move_player(&player);
             //--------------------------------------
             // log input into a file must add
+
+            //-----------------TAXI----------------- // WIP
+
+            //--------------------------------------
 
 
             //----------------STARS-----------------
             stars_spawn(&stars[stars_count], &stars_count);
+
             if (stars_count == MAX_AMM_STARS) stars_count = 0;
+
             stars_update(stars, &stars_count);
             stars_collect(stars, &player , &stars_count);
             //--------------------------------------

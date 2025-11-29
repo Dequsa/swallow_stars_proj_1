@@ -18,7 +18,7 @@ void calc_vel_taxi(taxi_t *taxi, const float target_pos_x, const float target_po
         const float u_x = d_x / d; // vector x of this vector
         const float u_y = d_y / d; // vector y of this vector
 
-        const float speed = 0.8f;
+        const float speed = 0.5f;
 
         taxi->velocity.x = u_x * speed; // speed evaluated by time and level
         taxi->velocity.y = u_y * speed;
@@ -53,6 +53,8 @@ void taxi_spawn(taxi_t *taxi, const player_t *player) {
         float *taxi_x = &taxi->spawn.x;
         float *taxi_y = &taxi->spawn.y;
 
+        taxi->is_active = TRUE;
+
         if (p_x < COLS / 2) {   // left side of the screen
 
                 *taxi_x = 1.0f;
@@ -77,7 +79,6 @@ void taxi_search_safe(taxi_t *taxi, const hunter_t *hunters) {
 
                         int is_safe = TRUE;
 
-                        // 2. Check this candidate spot against ALL active hunters
                         for (int k = 0; k < MAX_AMM_HUNTERS; k++) {
                                 if (hunters[k].is_active == TRUE) {
 
@@ -93,7 +94,6 @@ void taxi_search_safe(taxi_t *taxi, const hunter_t *hunters) {
                                         int box_top = y;
                                         int box_bottom = y + BOX;
 
-                                        // 3. Intersection Check (AABB Collision)
                                         // If the boxes overlap, this spot is NOT safe.
                                         if (box_left < h_right && box_right > h_left &&
                                             box_top < h_bottom && box_bottom > h_top) {
@@ -122,8 +122,10 @@ void taxi_pickup(taxi_t *taxi, const player_t *player) {
         float *t_y = &taxi->position.y;
         float p_x = player->coordinates.x;
         float p_y = player->coordinates.y;
+
         timespec req{};
         timespec rem{};
+
         req.tv_nsec = 500000000;
         req.tv_sec = 0;
 
@@ -138,9 +140,37 @@ void taxi_pickup(taxi_t *taxi, const player_t *player) {
 }
 
 
-void taxi_delete(taxi_t *taxi, const player_t *player) {
+void taxi_drop(taxi_t *taxi, const player_t *player) {
 
+        calc_vel_taxi(taxi, taxi->drop_off.x, taxi->drop_off.y);
+
+        float *t_x = &taxi->position.x;
+        float *t_y = &taxi->position.y;
+        const float dr_x = taxi->drop_off.x;
+        const float dr_y = taxi->drop_off.y;
+
+        timespec req{};
+        timespec rem{};
+
+        req.tv_nsec = 16000000;
+        req.tv_sec = 0;
+                // fix this not working not printing out the taxi
+        while(*t_x != dr_x && *t_y != dr_y) {
+                if (taxi->is_active) {
+                        int t_x = taxi->position.x;
+                        int t_y = taxi->position.y;
+                        werase(game_window);
+                        mvwprintw(game_window, t_y, t_x, "%c", 'T');
+                        wrefresh(game_window);
+                        // add this function to this loop so it redraws everything update_screen();
+                }
+                *t_x += taxi->velocity.x;
+                *t_y += taxi->velocity.y;
+                nanosleep(&req, &rem);
+        }
+        taxi->is_active = FALSE;
 }
+
 
 void taxi_call(taxi_t *taxi, const player_t *player, const hunter_t *hunters) {
 
@@ -152,7 +182,8 @@ void taxi_call(taxi_t *taxi, const player_t *player, const hunter_t *hunters) {
 
                 taxi_pickup(taxi, player);
 
-                taxi_delete(taxi, player);
+                taxi_drop(taxi, player);
+
         }
 
 }

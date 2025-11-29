@@ -35,7 +35,7 @@ void init_player(player_t *player) {
 }
 
 
-void out_of_bounds_check_player(float *new_x,  float *new_y) {
+void out_of_bounds_check_player(float *new_x,  float *new_y, int *heading) {
 
     const float min_x = 1.0f;
     const float max_x = (float)COLS - PLAYER_SPRITE_WIDTH - 1;
@@ -44,15 +44,55 @@ void out_of_bounds_check_player(float *new_x,  float *new_y) {
 
     if (*new_x < min_x) {
         *new_x = min_x;
+        if (*heading == LEFT) *heading = RIGHT;
     }else if (*new_x > max_x) {
         *new_x = max_x;
+        if (*heading == RIGHT) *heading = LEFT;
     }
 
     if (*new_y < min_y) {
         *new_y = min_y;
+        if (*heading == UP) *heading = DOWN;
     }else if (*new_y > max_y) {
         *new_y = max_y;
+        if (*heading == DOWN) *heading = UP;
     }
+}
+
+
+void update_player_position(player_t *player) {
+
+    int *heading = &player->current_heading;
+    const float move = (float)player->current_speed * 0.3f;
+    float new_y = player->coordinates.y;
+    float new_x = player->coordinates.x;
+
+    switch (player->current_heading) {
+        case UP: {
+            new_y -= move * 0.56f;
+            break;
+        }
+        case DOWN: {
+            new_y += move * 0.56f;
+            break;
+        }
+        case LEFT: {
+            new_x -= move;
+            break;
+        }
+        case RIGHT: {
+            new_x += move;
+            break;
+        }
+        default: { break; }
+    }
+
+
+    out_of_bounds_check_player(&new_x, &new_y, heading);
+
+    player->coordinates.x = new_x;
+    player->coordinates.y = new_y;
+
 }
 
 
@@ -79,14 +119,12 @@ void move_player(player_t *player) {
             if (player->current_speed < player->max_speed) {
                 player->current_speed++;
             }
-            //velocity_player(player);
             break;
         }
         case 'o': {
             if (player->current_speed > player->min_speed) {
                 player->current_speed--;
             }
-            //velocity_player(player);
             break;
         }
             case 'x': { // debug button
@@ -98,36 +136,8 @@ void move_player(player_t *player) {
             break;
         }
     }
-    //update_player_movement(player);
-    const float move = (float)player->current_speed * 0.3f;
-    float new_y = player->coordinates.y;
-    float new_x = player->coordinates.x;
 
-    switch (player->current_heading) {
-        case UP: {
-            new_y -= move * 0.56f;
-            break;
-        }
-        case DOWN: {
-            new_y += move * 0.56f;
-            break;
-        }
-        case LEFT: {
-            new_x -= move;
-            break;
-        }
-        case RIGHT: {
-            new_x += move;
-            break;
-        }
-        default: { break; }
-    }
-
-
-    out_of_bounds_check_player(&new_x, &new_y);
-
-    player->coordinates.x = new_x;
-    player->coordinates.y = new_y;
+    update_player_position(player);
 
 }
 

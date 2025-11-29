@@ -29,7 +29,9 @@ void calculate_vel_vec(hunter_t *hunter, const player_t *player,const int eva_ti
 
 }
 
-void hunter_dash(hunter_t *hunter, player_t *player, int eva_time) {
+
+void hunter_dash(hunter_t *hunter, const player_t *player, int eva_time) {
+
     float p_x = player->coordinates.x;
     float p_y = player->coordinates.y;
     const float d_multiplier = 1.5f;
@@ -38,7 +40,7 @@ void hunter_dash(hunter_t *hunter, player_t *player, int eva_time) {
     hunter->target_pos.y = p_y;
 
     calculate_vel_vec(hunter, player, eva_time * d_multiplier);
-    hunter->dash_cooldown = 10;
+
 }
 
 
@@ -61,6 +63,15 @@ void check_dash(hunter_t *hunter, player_t *player, const int eva_time) {
         && h_y >= p_y - 10.0f
         && h_y <= p_y + 10.0f)
         {
+
+        // int s_c = hunter->stop_cooldown;
+        //
+        // while (s_c > 0) {
+        //     s_c--;
+        //     hunter->vel.x = 0.0f;
+        //     hunter->vel.y = 0.0f;
+        // }
+
         hunter_dash(hunter, player, eva_time);
         }
     if (*h_c > 0) {
@@ -126,6 +137,7 @@ void hunter_init(hunter_t *hunter, const type_t *type) {
         hunter[i].spawn_chance = type[h_type].spawn_chance;
         hunter[i].min_speed = type[h_type].min_speed;
         hunter[i].max_speed = type[h_type].max_speed;
+        hunter->dash_cooldown = 240;
         hunter[i].cooldown = 0;
 
     }

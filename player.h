@@ -45,13 +45,4 @@ typedef enum {
 
 void init_player(player_t *player);
 
-void render_player(player_t *player);
-
-void destroy_player(player_t *player);
-
-void out_of_bounds_check_player(float *new_x, float *new_y);
-
 void move_player(player_t *player);
-
-
-//void velocity_update(player_t *player);

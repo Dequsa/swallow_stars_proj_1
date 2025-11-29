@@ -33,21 +33,9 @@ void init_board(board_t *board) { // initialize everything for the board and sta
 
 }
 
+void update_time(const int time_left, const float text_max_pos) {
 
-void update_status(const player_t *player, WINDOW *window,const char *name, const int time_left, const int current_lvl) { // update health and score
-
- werase(status_window);
-  box(status_window, 0, 0);
-
-  const int time_left_seen = time_left / 60;
-
-  const float text_max_pos = COLS - 40;
-
-  mvwprintw(status_window, 1, (int)(text_max_pos * 0.05f), "LEVEL: %d", current_lvl);
-  mvwprintw(status_window, 1, (int)(text_max_pos * 0.10f), "NAME: %s", name);
-  mvwprintw(status_window, 1, (int)(text_max_pos * 0.20f), "CURRENT SPEED: %d", player->current_speed);
-  mvwprintw(status_window, 1, (int)(text_max_pos * 0.45f), "CURRENT HEALTH: %d", player->health);
-  mvwprintw(status_window, 1, (int)(text_max_pos * 0.70f), "STARS COLLECTED: %d", player->stars_collected);
+ const int time_left_seen = time_left / 60;
 
  if (time_left_seen > 60) {
   init_pair(1, COLOR_GREEN, COLOR_BLACK);
@@ -74,8 +62,27 @@ void update_status(const player_t *player, WINDOW *window,const char *name, cons
   wattroff(status_window, COLOR_PAIR(1));
 
  }
-  wrefresh(status_window);
- }
+ wrefresh(status_window);
+}
+
+
+void update_status(const player_t *player, WINDOW *window ,const char *name, const int time_left, const int current_lvl) {
+ // update health and score
+
+ werase(status_window);
+ box(status_window, 0, 0);
+
+ const float text_max_pos = COLS - 40.0f;
+
+ mvwprintw(status_window, 1, (int)(text_max_pos * 0.05f), "LEVEL: %d", current_lvl);
+ mvwprintw(status_window, 1, (int)(text_max_pos * 0.10f), "NAME: %s", name);
+ mvwprintw(status_window, 1, (int)(text_max_pos * 0.20f), "CURRENT SPEED: %d", player->current_speed);
+ mvwprintw(status_window, 1, (int)(text_max_pos * 0.45f), "CURRENT HEALTH: %d", player->health);
+ mvwprintw(status_window, 1, (int)(text_max_pos * 0.70f), "STARS COLLECTED: %d", player->stars_collected);
+
+ update_time(time_left, text_max_pos);
+
+}
 
 
 void update_player(const player_t *player, WINDOW *window, const int current_frame) {
@@ -95,8 +102,23 @@ void update_player(const player_t *player, WINDOW *window, const int current_fra
 
 
 void update_star(const star_t *star) {
+
+ init_pair(4, COLOR_YELLOW, COLOR_BLACK);
+ init_pair(5, COLOR_RED, COLOR_BLACK);
+
    if (star->is_active) {
+
+    if (star->position.y > COLS / 5 && star->position.y < COLS / 2) {
+
+     wattron(game_window, COLOR_PAIR(5));
+
+    }
+
+
     mvwprintw(game_window, (int)star->position.y, (int)star->position.x, "%c", star->sprite);
+
+    wattroff(game_window, COLOR_PAIR(5));
+
    }
 }
 
@@ -127,8 +149,9 @@ void update_hunter(hunter_t *hunter) {
  }
 }
 
+void update_screen(const player_t *player, const star_t *stars, hunter_t *hunter,
+ const char *name, const int time_left, const int current_lvl) {
 
-void update_screen(const player_t *player, const star_t *stars, hunter_t *hunter, const char *name, const int time_left, const int current_lvl) {
   werase(game_window);
   box(game_window, 0, 0);
 
@@ -198,7 +221,7 @@ void show_lvl_complete(const int current_lvl) {
  timespec req{};
  timespec rem{};
  req.tv_nsec = 0;
- req.tv_sec = 1; // 3s sleep so player doesn't instantly turn  off screen
+ req.tv_sec = 1; // 3s sleep so player doesn't instantly turn  off-screen
 
  nanosleep(&req, &rem);
 
