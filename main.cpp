@@ -219,9 +219,43 @@ void seed_set() {
 }
 
 
-void stars() {
+void stars_all(int *stars_count, player_t *player, star_t *stars ){
+
+    stars_spawn(&stars[*stars_count], stars_count);
+
+    if (*stars_count == MAX_AMM_STARS) *stars_count = 0;
+
+    stars_update(stars, stars_count);
+    stars_collect(stars, player , stars_count);
+}
+
+void hunters_all(hunter_t *hunters, player_t *player, const type_t *hunter_types, const int cache_time_left, const int i, const int time_left ) {
+
+    const int total_level_frames = cache_time_left * FPS;
+    const int frames_passed = total_level_frames - time_left;
+    const int difficulty_adder = (frames_passed * 9) / total_level_frames;
+    const int eva_time = 1 + difficulty_adder;
+
+    hunter_spawn(hunters, player, hunter_types, eva_time);
+    hunter_update(hunters, player, eva_time);
+}
+
+int check_over(const int time_left, const int health, int* game_over, const int collected_stars, const unsigned int star_quota) {
+
+    if (time_left <= 0 || health <= 0) {
+
+        *game_over = TRUE;
+
+    }else if (collected_stars == star_quota) {
+
+        return 1;
+`
+    }
+
+    return 0;
 
 }
+
 
 int main() {
     star_t stars[MAX_AMM_STARS];
@@ -270,22 +304,11 @@ int main() {
 
 
             //----------------STARS-----------------
-            stars_spawn(&stars[stars_count], &stars_count);
-
-            if (stars_count == MAX_AMM_STARS) stars_count = 0;
-
-            stars_update(stars, &stars_count);
-            stars_collect(stars, &player , &stars_count);
+            stars_all(&stars_count, &player, stars);
             //--------------------------------------
 
             //----------------HUNTERS---------------
-            const int total_level_frames = boards_cache[i].time_left * FPS;
-            const int frames_passed = total_level_frames - board.time_left;
-            const int difficulty_adder = (frames_passed * 9) / total_level_frames;
-            const int eva_time = 1 + difficulty_adder;
-
-            hunter_spawn(hunters, &player, hunter_types, eva_time);
-            hunter_update(hunters, &player, eva_time);
+            hunters_all(hunters, &player, hunter_types,boards_cache[i].time_left, i, board.time_left);
             //--------------------------------------
 
             update_screen(&player, stars, hunters, player_name, board.time_left, i);
@@ -294,9 +317,7 @@ int main() {
 
             board.time_left--;
 
-            if (board.time_left <= 0 || player.health <= 0) {
-                board.is_over = TRUE;
-            }else if (player.stars_collected == board.star_quota) {
+            if (check_over(board.time_left, player.health, &board.is_over, player.stars_collected, board.star_quota)) {
                 break;
             }
 
