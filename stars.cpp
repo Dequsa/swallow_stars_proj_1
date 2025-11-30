@@ -52,7 +52,7 @@ void stars_update(star_t *star, int *stars_count) {
 
 void stars_collect(star_t *star, player_t *player, int *stars_count) {
     for (int i = 0; i < MAX_AMM_STARS; i++) {
-        if (star[i].is_active == TRUE && star[i].position.x >= player->coordinates.x - 1 && star[i].position.x <= player->coordinates.x + PLAYER_WIDTH && player->coordinates.y <= star[i].position.y + 0.5f && player->coordinates.y >= star[i].position.y - 0.5f) {
+        if (star[i].is_active == TRUE && star[i].position.x >= player->coordinates.x - 1.0f && star[i].position.x <= player->coordinates.x + PLAYER_WIDTH && player->coordinates.y <= star[i].position.y + 1.0f && player->coordinates.y >= star[i].position.y - 1.0f) {
             star[i].is_active = FALSE;
             star[i].position.y = 0.0f;
             star[i].velocity = 0.0f;

@@ -38,7 +38,7 @@ typedef struct {
 
 void init_board(board_t *board);
 
-void update_screen(const player_t *player, const star_t *stars, hunter_t *hunter, const char *name, const int time_left, const int current_lvl);
+void update_screen(const player_t *player, const star_t *stars, hunter_t *hunter, const char *name, const int time_left, const int current_lvl, taxi_t *taxi);
 
 void game_over();
 
