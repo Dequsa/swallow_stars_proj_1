@@ -149,8 +149,33 @@ void update_hunter(hunter_t *hunter) {
  }
 }
 
+
+void update_taxi(taxi_t *taxi, const player_t *player) {
+
+ if (taxi->visible) {
+
+  init_pair(3, COLOR_CYAN, COLOR_BLACK);
+  for (int i = 0; i < 3; i ++) {
+
+    wattron(game_window, COLOR_PAIR(3));
+    mvwprintw(game_window, (int)taxi->position.y, (int)taxi->position.x + i, "T");
+
+  }
+  wattroff(game_window, COLOR_PAIR(3));
+
+ } else {
+
+  if (taxi->cooldown > 0) {
+   taxi->cooldown--;
+  }
+
+ }
+
+}
+
+
 void update_screen(const player_t *player, const star_t *stars, hunter_t *hunter,
- const char *name, const int time_left, const int current_lvl) {
+ const char *name, const int time_left, const int current_lvl, taxi_t *taxi) {
 
   werase(game_window);
   box(game_window, 0, 0);
@@ -162,6 +187,8 @@ void update_screen(const player_t *player, const star_t *stars, hunter_t *hunter
   }
 
   update_player(player, game_window, current_frame);
+
+  update_taxi(taxi, player);
 
   for (int i = 0; i < MAX_AMM_STARS; i++) {
 

@@ -13,6 +13,8 @@ void init_player(player_t *player) {
     player->current_heading = UP;
     player->stars_collected = 0;
     player->current_amm_of_hunters_on_board = 0;
+    player->has_called_taxi = FALSE;
+    player->in_taxi = FALSE;
 
 
     const char temp_sprite_1[] = "\\V/\0";
@@ -61,7 +63,8 @@ void out_of_bounds_check_player(float *new_x,  float *new_y, int *heading) {
 
 
 void update_player_position(player_t *player) {
-
+    if (!player->in_taxi)
+    {
     int *heading = &player->current_heading;
     const float move = (float)player->current_speed * 0.3f;
     float new_y = player->coordinates.y;
@@ -92,12 +95,14 @@ void update_player_position(player_t *player) {
 
     player->coordinates.x = new_x;
     player->coordinates.y = new_y;
+    }
 
 }
 
 
-void move_player(player_t *player) {
-    switch (int key = getch()) {
+void move_player(player_t *player, int *input_key) {
+    int key;
+    switch (key = getch()) {
         case 'w': {
             player->current_heading = UP;
             break;
@@ -137,6 +142,7 @@ void move_player(player_t *player) {
         }
     }
 
+    *input_key = key;
     update_player_position(player);
 
 }

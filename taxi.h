@@ -10,13 +10,20 @@
 typedef struct {
     int cooldown;
     int is_active;
+    int is_roaming;
+    int picked;
+    int visible;
+    int found_drop;
+    int dropped;
     position_t position;
-    position_t spawn;
     velocity_t velocity;
     position_t pick_up;
     position_t drop_off;
 }taxi_t;
 
 
+void taxi_spawn(taxi_t *taxi);
 
-void taxi_call(taxi_t *taxi, const player_t *player, const hunter_t *hunters);
+void taxi_spawn(taxi_t *taxi);
+
+void taxi_update(taxi_t *taxi, player_t *player, const int *input_key);

@@ -6,147 +6,152 @@
 #include <cmath>
 #define PLAYABLE_AREA_X (1 + (COLS - 1))
 #define PLAYABLE_AREA_Y (LINES - STATUS_LINE_SIZE - 1)
+#define BASE_SPEED_TAXI 0.5f
+#define PICKUP_RADIUS 1.0f
+#define TAXI_WIDTH 3
+#define SPAWN_TAXI_X (float)(TAXI_WIDTH)
+#define SPAWN_TAXI_Y (float)(TAXI_WIDTH)
 
 void calc_vel_taxi(taxi_t *taxi, const float target_pos_x, const float target_pos_y) {
 
         taxi->pick_up.x = target_pos_x;
         taxi->pick_up.y = target_pos_y;
 
-        const float d_x = taxi->pick_up.x - taxi->spawn.x; // get delta x
-        const float d_y = taxi->pick_up.y - taxi->spawn.y; // get delta y
+        const float d_x = taxi->pick_up.x - taxi->position.x; // get delta x
+        const float d_y = taxi->pick_up.y - taxi->position.y; // get delta y
         const float d = sqrt(d_x * d_x + d_y * d_y); // pythagoras theorem for the length of vector pointing at player
         const float u_x = d_x / d; // vector x of this vector
         const float u_y = d_y / d; // vector y of this vector
 
-        const float speed = 0.5f;
+        const float speed = BASE_SPEED_TAXI;
 
-        taxi->velocity.x = u_x * speed; // speed evaluated by time and level
+        taxi->velocity.x = u_x * speed; // vec * by the speed of taxi for slower movement
         taxi->velocity.y = u_y * speed;
 }
 
 
-int taxi_check(const taxi_t *taxi) {
+int check_position(const float pos_x, const float pos_y, const float taxi_x, const float taxi_y) {
 
-        if (taxi->cooldown > 0) {
+        const float distance_x = taxi_x -  pos_x;
+        const float distance_y = taxi_y - pos_y ;
+        const float distance = sqrt(distance_x * distance_x + distance_y * distance_y);
+
+        if (distance < PICKUP_RADIUS) {
                 return 1;
         }
+
         return 0;
 }
 
 
-void taxi_init(taxi_t *taxi) {
+int out_of_bounds_check_taxi(float taxi_x, float taxi_y) {
 
-        taxi->drop_off.x = 0.0f;
-        taxi->drop_off.y = 0.0f;
-        taxi->pick_up.x = 0.0f;
-        taxi->pick_up.y = 0.0f;
-        taxi->spawn.x = PLAYABLE_AREA_X / 2.0f;
-        taxi->spawn.y = PLAYABLE_AREA_Y / 2.0f;
-        taxi->velocity.x = 0.0f;
+        const float min_x = 1.0f;
+        const float max_x = (float)COLS - TAXI_WIDTH - 1;
+        const float min_y = 1.0f;
+        const float max_y = (float)LINES - STATUS_LINE_SIZE - 2.0f;
 
-}
-
-
-void taxi_spawn(taxi_t *taxi, const player_t *player) {
-
-        float p_x = player->coordinates.x;
-        float *taxi_x = &taxi->spawn.x;
-        float *taxi_y = &taxi->spawn.y;
-
-        taxi->is_active = TRUE;
-
-        if (p_x < COLS / 2) {   // left side of the screen
-
-                *taxi_x = 1.0f;
-                *taxi_y = (float)(LINES / 2);
-
-        }else {         // right side screen spawn
-
-                *taxi_x = (float)(COLS - 1);
-                *taxi_y = (float)(LINES / 2);
-
-        }
-}
-
-
-void taxi_search_safe(taxi_t *taxi, const hunter_t *hunters) {
-
-
-}
-
-
-void taxi_pickup(taxi_t *taxi, const player_t *player) {
-
-        calc_vel_taxi(taxi, player->coordinates.x, player->coordinates.y);
-
-        float *t_x = &taxi->position.x;
-        float *t_y = &taxi->position.y;
-        float p_x = player->coordinates.x;
-        float p_y = player->coordinates.y;
-
-        timespec req{};
-        timespec rem{};
-
-        req.tv_nsec = 500000000;
-        req.tv_sec = 0;
-
-        while(*t_x != p_x && *t_y != p_y) {
-                *t_x += taxi->velocity.x;
-                *t_y += taxi->velocity.y;
-                nanosleep(&req, &rem);
+        if (taxi_x < min_x || taxi_x > max_x || taxi_y < min_y || taxi_y > max_y) {
+                return 1;
         }
 
-        taxi->velocity.x = 0.0f;
-        taxi->velocity.y = 0.0f;
+        return 0;
+
 }
 
 
-void taxi_drop(taxi_t *taxi, const player_t *player) {
+void taxi_spawn(taxi_t *taxi) {
 
-        calc_vel_taxi(taxi, taxi->drop_off.x, taxi->drop_off.y);
-
-        float *t_x = &taxi->position.x;
-        float *t_y = &taxi->position.y;
-        const float dr_x = taxi->drop_off.x;
-        const float dr_y = taxi->drop_off.y;
-
-        timespec req{};
-        timespec rem{};
-
-        req.tv_nsec = 16000000;
-        req.tv_sec = 0;
-                // fix this not working not printing out the taxi
-        while(*t_x != dr_x && *t_y != dr_y) {
-                if (taxi->is_active) {
-                        int t_x = taxi->position.x;
-                        int t_y = taxi->position.y;
-                        werase(game_window);
-                        mvwprintw(game_window, t_y, t_x, "%c", 'T');
-                        wrefresh(game_window);
-                        // add this function to this loop so it redraws everything update_screen();
-                }
-                *t_x += taxi->velocity.x;
-                *t_y += taxi->velocity.y;
-                nanosleep(&req, &rem);
-        }
         taxi->is_active = FALSE;
+        taxi->visible = FALSE;
+        taxi->picked = FALSE;
+        taxi->cooldown = 0;
+        taxi->dropped = FALSE;
+
+        // spawn taxi outside the screen
+        taxi->position.x = SPAWN_TAXI_X;
+        taxi->position.y = SPAWN_TAXI_Y;
 }
 
 
-void taxi_call(taxi_t *taxi, const player_t *player, const hunter_t *hunters) {
+void taxi_update(taxi_t *taxi, player_t *player, const int *input_key) {
 
-        if (taxi_check(taxi)) {
+        if (taxi->is_active) {
+                
+                taxi->visible = TRUE;
 
-                taxi_spawn(taxi, player);
+                if (!taxi->dropped) {
+                        if (!taxi->picked) {
 
-                taxi_search_safe(taxi, hunters);
+                                calc_vel_taxi(taxi, player->coordinates.x, player->coordinates.y);
+                                taxi->position.x += taxi->velocity.x;
+                                taxi->position.y += taxi->velocity.y;
 
-                taxi_pickup(taxi, player);
+                                int collision_taxi_player = check_position(player->coordinates.x, player->coordinates.y, taxi->position.x, taxi->position.y);
 
-                taxi_drop(taxi, player);
+                                if ( collision_taxi_player ) { // reached playe 
+                                        
+                                        taxi->picked = TRUE;
+                                        player->in_taxi = TRUE;
 
+                                        const float drop_x = (float)(rand() % PLAYABLE_AREA_X);
+                                        const float drop_y = (float)(rand() % PLAYABLE_AREA_Y);
+
+                                        taxi->drop_off.x = drop_x;
+                                        taxi->drop_off.y = drop_y;
+
+                                }
+                        }else {
+
+                                if(!taxi->found_drop) {
+                                
+                                        calc_vel_taxi(taxi, taxi->drop_off.x, taxi->drop_off.y);
+                                        taxi->found_drop = TRUE;
+
+                                }
+                                
+                                taxi->position.x += taxi->velocity.x;
+                                taxi->position.y += taxi->velocity.y;
+
+                                player->coordinates.x = taxi->position.x;
+                                player->coordinates.y = taxi->position.y;
+
+                                int reached_dropoff = check_position(taxi->drop_off.x, taxi->drop_off.y, taxi->position.x, taxi->position.y);
+
+                                if (reached_dropoff || *input_key == 'x') { // reached drop off point
+
+                                        player->in_taxi = FALSE;
+                                        taxi->dropped = TRUE;  
+                                        taxi->picked = FALSE;
+                                        taxi->cooldown = FPS * 30; // reset cooldown 30s
+
+                                        float exit_x;
+                                        
+                                        if(taxi->position.x > COLS / 2) { // if closer to left go left if else go right
+                                                exit_x = COLS + 10;
+                                        }else {
+                                                exit_x = COLS - 10;
+                                        };
+
+                                        const float exit_y = taxi->position.y;
+
+                                        calc_vel_taxi(taxi, exit_x, exit_y); // calc exit vector
+
+                                }
+                        }
+                }
+
+                if (taxi->dropped) {
+
+                        taxi->position.x += taxi->velocity.x;
+                        taxi->position.y += taxi->velocity.y;
+
+                        if (out_of_bounds_check_taxi(taxi->position.x, taxi->position.y)) {
+                                taxi->is_active = FALSE;
+                                taxi->visible = FALSE;
+                                player->in_taxi = FALSE;
+                        }
+
+                }
         }
-
 }
-
-

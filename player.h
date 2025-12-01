@@ -12,6 +12,7 @@
 #endif //SWALLOW_GAME_PROJ_1_PLAYER_H
 
 typedef struct {
+    int in_taxi;
     int max_health;
     int health; // CONFIG FILE
     int current_heading; // 0 down 1 up 2 left 3 right
@@ -24,6 +25,7 @@ typedef struct {
     char frame_two[PLAYER_SPRITE_SIZE + 1];
     int current_amm_of_hunters_on_board;
     int max_hunters_on_board;
+    int has_called_taxi;
     struct coordinates {
         float x;
         float y;
@@ -45,4 +47,4 @@ typedef enum {
 
 void init_player(player_t *player);
 
-void move_player(player_t *player);
+void move_player(player_t *player, int *input_key);

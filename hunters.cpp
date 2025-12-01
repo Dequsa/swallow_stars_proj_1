@@ -63,10 +63,14 @@ void check_dash(hunter_t *hunter, player_t *player, const int eva_time) {
         && h_y >= p_y - 10.0f
         && h_y <= p_y + 10.0f)
         {
-        hunter_dash(hunter, player, eva_time);
+            hunter->dash_cooldown = FPS * 5; // 5 second cooldown
+            hunter_dash(hunter, player, eva_time);
         }
+
     if (*h_c > 0) {
+
         (*h_c)--;
+
     }
 }
 
@@ -128,7 +132,6 @@ void hunter_init(hunter_t *hunter, const type_t *type) {
         hunter[i].spawn_chance = type[h_type].spawn_chance;
         hunter[i].min_speed = type[h_type].min_speed;
         hunter[i].max_speed = type[h_type].max_speed;
-        hunter->dash_cooldown = 240;
         hunter[i].cooldown = 0;
 
     }
@@ -149,7 +152,7 @@ void hunter_spawn(hunter_t *hunter, player_t *player, const type_t *type, const 
 
 
                 hunter[i].bounces_done = 0;
-
+                hunter->dash_cooldown = 0;
                 hunter[i].displayed = FALSE;
 
                 const int X_MARGIN = 2;
@@ -224,29 +227,32 @@ void hunter_update(hunter_t *hunter, player_t *player, const int eva_time) {
 
 void hunter_dmg(hunter_t *hunter, player_t *player) {
 
-    const float p_x = player->coordinates.x;
-    const float p_y = player->coordinates.y;
-    const float p_w = PLAYER_SPRITE_SIZE;
-    const float p_h = PLAYER_SPRITE_Y_SIZE;
+    if(!player->in_taxi) {
+        const float p_x = player->coordinates.x;
+        const float p_y = player->coordinates.y;
+        const float p_w = PLAYER_SPRITE_SIZE;
+        const float p_h = PLAYER_SPRITE_Y_SIZE;
 
-    for (int i = 0; i < MAX_AMM_HUNTERS; i++) {
+        for (int i = 0; i < MAX_AMM_HUNTERS; i++) {
 
-        if (!hunter[i].is_active) {
-            continue;
-        }
+            if (!hunter[i].is_active) {
+                continue;
+            }
 
-        const float h_x = hunter[i].hunter_pos.x;
-        const float h_y = hunter[i].hunter_pos.y;
-        const float h_w = hunter[i].width;
-        const float h_h = hunter[i].height;
+            const float h_x = hunter[i].hunter_pos.x;
+            const float h_y = hunter[i].hunter_pos.y;
+            const float h_w = hunter[i].width;
+            const float h_h = hunter[i].height;
 
-        if (p_x < h_x + h_w && p_x + p_w > h_x && // collision check
-            p_y < h_y + h_h && p_y + p_h > h_y)
-        {
-            player->health -= hunter[i].dmg;
-            hunter[i].is_active = FALSE;
-            hunter[i].cooldown = 10;
-            player->current_amm_of_hunters_on_board--;
+            if (p_x < h_x + h_w && p_x + p_w > h_x && // collision check
+                p_y < h_y + h_h && p_y + p_h > h_y)
+            {
+                player->health -= hunter[i].dmg;
+                hunter[i].is_active = FALSE;
+                hunter[i].cooldown = FPS * 5; // 5 seconds cooldown
+                player->current_amm_of_hunters_on_board--;
+            }
         }
     }
+
 }

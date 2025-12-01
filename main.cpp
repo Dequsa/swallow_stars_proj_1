@@ -1,9 +1,10 @@
 #include <iostream>
 #include "board.h" // connects all libs together
 #include <cstring>
-#define CFG_S "../CONFIGS/stats.cfg"
-#define CFG_H "../CONFIGS/hunters..cfg"
-#define CONFIG_PATH_BOARD "../CONFIGS/board.cfg"
+#include <time.h>
+#define CFG_S "./CONFIGS/stats.cfg"
+#define CFG_H "./CONFIGS/hunters.cfg"
+#define CONFIG_PATH_BOARD "./CONFIGS/board.cfg"
 #define ERR_S 0
 #define CONFIG_ERR (-1)
 #define ERR_NPTR (-2)
@@ -162,13 +163,24 @@ int load_config_board(FILE* fptr, board_t *boards_cache) {
 }
 
 
-void level_complete(board_t *board, const board_t *boards_cache ,player_t *player, const int current_lvl, hunter_t *hunters, const type_t *types_hunter) {
+void hunter_earase_all(hunter_t *hunters, player_t *player) {
+
+    for (int i = 0; i < MAX_AMM_HUNTERS; i++) {
+        if (hunters[i].is_active == TRUE) {
+            hunters[i].is_active = FALSE;
+            hunters[i].bounces_done = 0;
+            player->current_amm_of_hunters_on_board--;
+        }
+    }
+}
+
+
+void level_complete(board_t *board, const board_t *boards_cache ,player_t *player, const int current_lvl, hunter_t *hunters, const type_t *types_hunter, taxi_t *taxi) {
     board->is_over = FALSE;
 
     board->max_hunters = boards_cache[current_lvl].max_hunters;
     board->star_quota = boards_cache[current_lvl].star_quota;
     board->eva_lvl = boards_cache[current_lvl].eva_lvl;
-    // board->eva_time_interval = boards_cache[current_lvl].eva_time_interval;
     board->time_left = boards_cache[current_lvl].time_left * FPS;
 
     player->health = player->max_health;
@@ -176,7 +188,12 @@ void level_complete(board_t *board, const board_t *boards_cache ,player_t *playe
     player->coordinates.y = LINES / 2;
     player->max_hunters_on_board = board->max_hunters;
     player->stars_collected = 0;
+    player->has_called_taxi = FALSE;
+    player->in_taxi = FALSE;
+    taxi->is_active = FALSE;
+    taxi->visible = FALSE;
 
+    hunter_earase_all(hunters, player);
     hunter_spawn(hunters, player, types_hunter, board->eva_time_interval);
 
     if (current_lvl > 0) {
@@ -210,11 +227,6 @@ int load_configs(FILE *fptr, player_t *player, type_t *hunter_types, board_t *bo
 
 
     return 0;
-}
-
-
-void main_init() {
-
 }
 
 
@@ -264,7 +276,7 @@ int check_over(const int time_left, const int health, int* game_over, const int 
 }
 
 
-void main_game_loop(board_t *board, board_t *boards_cache, player_t *player, hunter_t *hunters, type_t *hunter_types, star_t *stars, char* player_name )  {
+void main_game_loop(board_t *board, board_t *boards_cache, player_t *player, hunter_t *hunters, type_t *hunter_types, star_t *stars, char* player_name, taxi_t *taxi) {
 
     timespec req{};
     timespec rem{};
@@ -273,19 +285,41 @@ void main_game_loop(board_t *board, board_t *boards_cache, player_t *player, hun
 
     int stars_count = 0;
 
+    
+
     for (int i = 0 ; i < LEVEL_AMM; i++) {
 
-        level_complete(board, boards_cache, player, i, hunters, hunter_types);
+        level_complete(board, boards_cache, player, i, hunters, hunter_types, taxi);
+        taxi_spawn(taxi);
 
         while (!board->is_over) {
 
-            move_player(player);
+            int input_key = -1;
+
+            move_player(player, &input_key);
+
+            if (player->health <= player->max_health / 2 && !player->has_called_taxi && taxi->cooldown <= 0) {
+                
+                taxi->dropped = FALSE;
+                taxi->found_drop = FALSE;
+                taxi->is_active = TRUE;
+                player->has_called_taxi = TRUE;
+            
+            }
+            
+            if (taxi->cooldown > 0) {
+                taxi->cooldown--;
+            }
+
+            if(taxi->is_active) {
+                taxi_update(taxi, player, &input_key);
+            }
 
             stars_all(&stars_count, player, stars);
 
             hunters_all(hunters, player, hunter_types,boards_cache[i].time_left, i, board->time_left);
 
-            update_screen(player, stars, hunters, player_name, board->time_left, i);
+            update_screen(player, stars, hunters, player_name, board->time_left, i, taxi);
 
             nanosleep(&req, &rem);
 
@@ -307,6 +341,7 @@ void main_game_loop(board_t *board, board_t *boards_cache, player_t *player, hun
 
 
 int main() {
+
     star_t stars[MAX_AMM_STARS];
     hunter_t hunters[MAX_AMM_HUNTERS];
     type_t hunter_types[HUNTER_TYPE_AMM];
@@ -325,13 +360,15 @@ int main() {
     init_player(&player);
     stars_init(stars);
     hunter_init(hunters, hunter_types);
+    taxi_spawn(&taxi);
 
     char player_name[MAX_PLAYER_NAME_LENGTH];
 
     get_player_name(player_name);
 
-    main_game_loop(&board, boards_cache, &player, hunters, hunter_types, stars, player_name);
+    main_game_loop(&board, boards_cache, &player, hunters, hunter_types, stars, player_name, &taxi);
 
 
     return 0;
+
 }
