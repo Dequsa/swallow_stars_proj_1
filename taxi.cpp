@@ -136,6 +136,8 @@ void taxi_update(taxi_t *taxi, player_t *player, int *input_key) {
                                 if (reached_dropoff || *input_key == 'x') { // reached drop off point
 
                                         player->in_taxi = FALSE;
+                                        player->health = player->max_health; // heal player on drop off
+
                                         taxi->dropped = TRUE;  
                                         taxi->picked = FALSE;
                                         taxi->cooldown = FPS * 30; // reset cooldown 30s

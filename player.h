@@ -12,6 +12,7 @@
 #endif //SWALLOW_GAME_PROJ_1_PLAYER_H
 
 typedef struct {
+    int score;
     int in_taxi;
     int max_health;
     int health; // CONFIG FILE

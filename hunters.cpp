@@ -58,12 +58,12 @@ void check_dash(hunter_t *hunter, player_t *player, const int eva_time) {
     if (*h_c <= 0
         &&p_x != t_x
         && p_y != t_y
-        && h_x >= p_x - 10.0f
-        && h_x <= p_x + 10.0f
-        && h_y >= p_y - 10.0f
-        && h_y <= p_y + 10.0f)
+        && h_x >= p_x - 20.0f
+        && h_x <= p_x + 20.0f
+        && h_y >= p_y - 20.0f
+        && h_y <= p_y + 20.0f)
         {
-            hunter->dash_cooldown = FPS * 5; // 5 second cooldown
+            hunter->dash_cooldown = FPS * 3; // 5 second cooldown
             hunter_dash(hunter, player, eva_time);
         }
 

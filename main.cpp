@@ -4,7 +4,7 @@
 #include <time.h>
 #define CFG_S "./CONFIGS/stats.cfg"
 #define CFG_H "./CONFIGS/hunters.cfg"
-#define CONFIG_PATH_BOARD "./CONFIGS/board.cfg"
+#define CFG_B "./CONFIGS/board.cfg"
 #define ERR_S 0
 #define CONFIG_ERR (-1)
 #define ERR_NPTR (-2)
@@ -117,7 +117,7 @@ int load_config_hunter(FILE* fptr, type_t *t) {
 
 int load_config_board(FILE* fptr, board_t *boards_cache) {
 
-    fptr = fopen(CONFIG_PATH_BOARD, "r");
+    fptr = fopen(CFG_B, "r");
 
     if (check_null_pointer(fptr)) return ERR_NPTR;
 
@@ -276,6 +276,13 @@ int check_over(const int time_left, const int health, int* game_over, const int 
 }
 
 
+void save_score(int *player_score, int collected_stars, int time_left, int time_for_map) {
+
+    *player_score += collected_stars * 100 + time_left / FPS + time_for_map/ FPS;
+
+}
+
+
 void main_game_loop(board_t *board, board_t *boards_cache, player_t *player, hunter_t *hunters, type_t *hunter_types, star_t *stars, char* player_name, taxi_t *taxi) {
 
     timespec req{};
@@ -285,7 +292,7 @@ void main_game_loop(board_t *board, board_t *boards_cache, player_t *player, hun
 
     int stars_count = 0;
 
-    
+    player->score = 0;
 
     for (int i = 0 ; i < LEVEL_AMM; i++) {
 
@@ -326,16 +333,19 @@ void main_game_loop(board_t *board, board_t *boards_cache, player_t *player, hun
             board->time_left--;
 
             if (check_over(board->time_left, player->health, &board->is_over, player->stars_collected, board->star_quota)) {
+                // save score
+                save_score(&player->score, player->stars_collected, board->time_left, boards_cache[i].time_left);
                 break;
             }
 
         }
+
         if (board->is_over) {
             break;
         }
     }
 
-    game_over();
+    game_over(player_name, player->score);
 
 }
 
