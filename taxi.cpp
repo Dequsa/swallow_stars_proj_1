@@ -141,7 +141,7 @@ void taxi_update(taxi_t *taxi, player_t *player, int *input_key) {
                                         taxi->picked = FALSE;
                                         taxi->cooldown = FPS * 30; // reset cooldown 30s
 
-                                        float exit_x;
+                                        float exit_x = (COLS / 2 ? COLS + 10 : COLS - 10); // if closer to left go left if else go right
                                         
                                         if(taxi->position.x > COLS / 2) { // if closer to left go left if else go right
                                                 exit_x = COLS + 10;
