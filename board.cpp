@@ -3,6 +3,9 @@
 //
 
 #include "board.h"
+#include <cstring>
+#define SCORE_P "../SCORES/scores.txt"
+#define AMM_OF_SCORES_TO_SHOW 10
 
 WINDOW *game_window = nullptr;
 WINDOW *status_window = nullptr;
@@ -74,7 +77,7 @@ void update_status(const player_t *player, WINDOW *window ,const char *name, con
 
  const float text_max_pos = COLS - 40.0f;
 
- mvwprintw(status_window, 1, (int)(text_max_pos * 0.05f), "LEVEL: %d", current_lvl);
+ mvwprintw(status_window, 1, (int)(text_max_pos * 0.05f), "LEVEL: %d", player->score);
  mvwprintw(status_window, 1, (int)(text_max_pos * 0.10f), "NAME: %s", name);
  mvwprintw(status_window, 1, (int)(text_max_pos * 0.20f), "CURRENT SPEED: %d", player->current_speed);
  mvwprintw(status_window, 1, (int)(text_max_pos * 0.45f), "CURRENT HEALTH: %d", player->health);
@@ -210,29 +213,99 @@ void update_screen(const player_t *player, const star_t *stars, hunter_t *hunter
  }
 
 
-void game_over() {
+int store_score(const char* player_name, int score, score_entry_t *top_scores) {
 
- nocbreak(); // stop the buffer input is real-time
- echo(); // do not show current input
- curs_set(1); // disable cursor display
- nodelay(stdscr, FALSE); // non blocking input
- keypad(stdscr, FALSE); //enable arrows
+   FILE* fptr = fopen(SCORE_P, "a");
+   if (fptr == nullptr) return 1;
 
- werase(game_window);
+   fprintf(fptr, "%s %d\n", player_name, score);
+   fclose(fptr);
 
- mvwprintw(game_window, LINES/2, COLS/2, "GAME OVER...");
- mvwprintw(game_window, LINES/2 + 1, COLS/2, "PRESS ANY BUTTON TO CONTINUE");
+   fptr = fopen(SCORE_P, "r");
 
- wrefresh(game_window);
+   int n = 0;
+   char buffer[256];
+   while (fgets(buffer, sizeof(buffer), fptr) != nullptr) {
+    n++;
+   }
 
- getch(); // Wait indefinitely until a key is pressed
+   rewind(fptr);
 
+   auto *all_scores = new player_data_t[n];
+   int score_count = 0;
 
- werase(game_window);
- werase(status_window);
+   while (score_count < n && fscanf(fptr, "%s %d", all_scores[score_count].player_name, &all_scores[score_count].score) == 2) {
+    score_count++;
+   }
 
- endwin();
+   fclose(fptr);
+
+   // bubble sort
+   for (int i = 0; i < score_count - 1; i++) {
+    for (int j = i + 1; j < score_count; j++) {
+     if (all_scores[j].score > all_scores[i].score) {
+      player_data_t temp = all_scores[i];
+      all_scores[i] = all_scores[j];
+      all_scores[j] = temp;
+     }
+    }
+   }
+
+   for (int i = 0; i < AMM_OF_SCORES_TO_SHOW && i < score_count; i++) {
+    strcpy(top_scores[i].player_name, all_scores[i].player_name);
+    top_scores[i].score = all_scores[i].score;
+   }
+
+   delete[] all_scores;
+   return 0;
 }
+
+
+void display_scoreboard(score_entry_t *top_scores) {
+    mvwprintw(game_window, 3, COLS / 2 - 10, "SCOREBOARD");
+
+    for (int i = 0; i < AMM_OF_SCORES_TO_SHOW; i++) {
+
+        if (top_scores[i].player_name[0] == '\0' && top_scores[i].score == 0) {
+            break;
+        }
+
+        mvwprintw(game_window, 5 + i, COLS / 2 - 15, "%d. %s - %d", i + 1, top_scores[i].player_name, top_scores[i].score);
+    }
+}
+
+void game_over(char* player_name, const int score) {
+    nocbreak();
+    noecho();
+    curs_set(0);
+    nodelay(stdscr, FALSE);
+    keypad(stdscr, TRUE);
+
+    werase(game_window);
+    box(game_window, 0, 0);
+
+    mvwprintw(game_window, LINES/2 - 5, COLS/2 - 5, "GAME OVER");
+
+    score_entry_t top_scores[AMM_OF_SCORES_TO_SHOW] = {};
+
+    if (!store_score(player_name, score, top_scores)) {
+     endwin();
+     mvwprintw(game_window, LINES/2, COLS/2, "error while storing the score");
+    }
+    display_scoreboard(top_scores);
+
+    mvwprintw(game_window, LINES - 2, COLS/2 - 10, "Press any key to exit...");
+
+    wrefresh(game_window);
+
+    getch(); // wait
+
+    werase(game_window);
+    werase(status_window);
+
+    endwin();
+}
+
 
 void show_lvl_complete(const int current_lvl) {
 
@@ -260,6 +333,7 @@ void show_lvl_complete(const int current_lvl) {
 }
 
 void get_player_name(char *name) {
+
 
  werase(game_window);
  mvwprintw(game_window, LINES/2, COLS/2 - 10, "ENTER NAME: ");

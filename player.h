@@ -4,7 +4,7 @@
 
 #ifndef SWALLOW_GAME_PROJ_1_PLAYER_H
 #define SWALLOW_GAME_PROJ_1_PLAYER_H
-#define PLAYER_SPRITE_SIZE 4
+#define PLAYER_SPRITE_SIZE 6
 #define MAX_CONFIG_SIZE 1000
 #define MAX_LINE_SIZE 32
 #define STATUS_LINE_SIZE 3
@@ -12,6 +12,7 @@
 #endif //SWALLOW_GAME_PROJ_1_PLAYER_H
 
 typedef struct {
+    int score;
     int in_taxi;
     int max_health;
     int health; // CONFIG FILE

@@ -4,7 +4,7 @@
 #include <time.h>
 #define CFG_S "./CONFIGS/stats.cfg"
 #define CFG_H "./CONFIGS/hunters.cfg"
-#define CONFIG_PATH_BOARD "./CONFIGS/board.cfg"
+#define CFG_B "./CONFIGS/board.cfg"
 #define ERR_S 0
 #define CONFIG_ERR (-1)
 #define ERR_NPTR (-2)
@@ -108,6 +108,10 @@ int load_config_hunter(FILE* fptr, type_t *t) {
 
             t[c_a_n].min_speed = r;
 
+        }else if (strcmp(n_o_v_h, "COLOR") == 0) {
+
+            //t[c_a_n].color = r;
+
         }
     }
     fclose(fptr);
@@ -117,7 +121,7 @@ int load_config_hunter(FILE* fptr, type_t *t) {
 
 int load_config_board(FILE* fptr, board_t *boards_cache) {
 
-    fptr = fopen(CONFIG_PATH_BOARD, "r");
+    fptr = fopen(CFG_B, "r");
 
     if (check_null_pointer(fptr)) return ERR_NPTR;
 
@@ -265,6 +269,8 @@ int check_over(const int time_left, const int health, int* game_over, const int 
 
         *game_over = TRUE;
 
+        return 1;
+
     }else if (collected_stars == star_quota) {
 
         return 1;
@@ -273,6 +279,16 @@ int check_over(const int time_left, const int health, int* game_over, const int 
 
     return 0;
 
+}
+
+
+void save_score(int *player_score, int *collected_stars, int *time_left) {
+
+    int points_from_stars = (*collected_stars) * 100;
+    int seconds_left = (*time_left) / FPS;
+    int points_from_time = seconds_left * 10;
+
+    *player_score += (points_from_stars + points_from_time);
 }
 
 
@@ -285,7 +301,7 @@ void main_game_loop(board_t *board, board_t *boards_cache, player_t *player, hun
 
     int stars_count = 0;
 
-    
+    player->score = 0;
 
     for (int i = 0 ; i < LEVEL_AMM; i++) {
 
@@ -312,7 +328,7 @@ void main_game_loop(board_t *board, board_t *boards_cache, player_t *player, hun
             }
 
             if(taxi->is_active) {
-                taxi_update(taxi, player, &input_key);
+                taxi_update(taxi, player, input_key);
             }
 
             stars_all(&stars_count, player, stars);
@@ -326,16 +342,19 @@ void main_game_loop(board_t *board, board_t *boards_cache, player_t *player, hun
             board->time_left--;
 
             if (check_over(board->time_left, player->health, &board->is_over, player->stars_collected, board->star_quota)) {
+                // save score
+                save_score(&player->score, &player->stars_collected, &board->time_left);
                 break;
             }
 
         }
+
         if (board->is_over) {
             break;
         }
     }
 
-    game_over();
+    game_over(player_name, player->score);
 
 }
 
@@ -370,5 +389,4 @@ int main() {
 
 
     return 0;
-
 }

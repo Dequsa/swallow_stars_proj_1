@@ -3,7 +3,7 @@
 //
 #include <iostream>
 #include "board.h"
-#define PLAYER_SPRITE_WIDTH 3
+#define PLAYER_SPRITE_WIDTH 5
 
 void init_player(player_t *player) {
 
@@ -17,8 +17,8 @@ void init_player(player_t *player) {
     player->in_taxi = FALSE;
 
 
-    const char temp_sprite_1[] = "\\V/\0";
-    const char temp_sprite_2[] = "/V\\\0";
+    const char temp_sprite_1[] = "\\-V-/\0";
+    const char temp_sprite_2[] = "/-V-\\\0";
 
     int i = 0;
     while (temp_sprite_1[i] != '\0') {

@@ -3,11 +3,10 @@
 //
 
 #include "board.h"
-#include <cmath>
 #define PLAYABLE_AREA_X (1 + (COLS - 1))
 #define PLAYABLE_AREA_Y (LINES - STATUS_LINE_SIZE - 1)
 #define BASE_SPEED_TAXI 0.5f
-#define PICKUP_RADIUS 1.0f
+#define PICKUP_RADIUS 1.5f
 #define TAXI_WIDTH 3
 #define SPAWN_TAXI_X (float)(TAXI_WIDTH)
 #define SPAWN_TAXI_Y (float)(TAXI_WIDTH)
@@ -30,13 +29,13 @@ void calc_vel_taxi(taxi_t *taxi, const float target_pos_x, const float target_po
 }
 
 
-int check_position(const float pos_x, const float pos_y, const float taxi_x, const float taxi_y) {
+int check_position(float tar_x, float tar_y, float source_x, float source_y, float r) {
 
-        const float distance_x = taxi_x -  pos_x;
-        const float distance_y = taxi_y - pos_y ;
+        const float distance_x = source_x -  tar_x;
+        const float distance_y = source_y - tar_y ;
         const float distance = sqrt(distance_x * distance_x + distance_y * distance_y);
 
-        if (distance < PICKUP_RADIUS) {
+        if (distance <= r) {
                 return 1;
         }
 
@@ -74,33 +73,35 @@ void taxi_spawn(taxi_t *taxi) {
 }
 
 
-void taxi_update(taxi_t *taxi, player_t *player, const int *input_key) {
+void taxi_update(taxi_t *taxi, player_t *player, const int input_key) {
 
         if (taxi->is_active) {
                 
                 taxi->visible = TRUE;
 
                 if (!taxi->dropped) {
+
                         if (!taxi->picked) {
 
                                 calc_vel_taxi(taxi, player->coordinates.x, player->coordinates.y);
                                 taxi->position.x += taxi->velocity.x;
                                 taxi->position.y += taxi->velocity.y;
 
-                                int collision_taxi_player = check_position(player->coordinates.x, player->coordinates.y, taxi->position.x, taxi->position.y);
+                                int collision_taxi_player = check_position(player->coordinates.x, player->coordinates.y, taxi->position.x, taxi->position.y, PICKUP_RADIUS);
 
                                 if ( collision_taxi_player ) { // reached playe 
                                         
                                         taxi->picked = TRUE;
                                         player->in_taxi = TRUE;
 
-                                        const float drop_x = (float)(rand() % PLAYABLE_AREA_X);
-                                        const float drop_y = (float)(rand() % PLAYABLE_AREA_Y);
+                                        float drop_x = (float)(rand() % PLAYABLE_AREA_X);
+                                        float drop_y = (float)(rand() % PLAYABLE_AREA_Y);
 
                                         taxi->drop_off.x = drop_x;
                                         taxi->drop_off.y = drop_y;
 
                                 }
+
                         }else {
 
                                 if(!taxi->found_drop) {
@@ -116,24 +117,21 @@ void taxi_update(taxi_t *taxi, player_t *player, const int *input_key) {
                                 player->coordinates.x = taxi->position.x;
                                 player->coordinates.y = taxi->position.y;
 
-                                int reached_dropoff = check_position(taxi->drop_off.x, taxi->drop_off.y, taxi->position.x, taxi->position.y);
+                                int reached_dropoff = check_position(taxi->drop_off.x, taxi->drop_off.y, taxi->position.x, taxi->position.y, PICKUP_RADIUS);
 
-                                if (reached_dropoff || *input_key == 'x') { // reached drop off point
+                                if (reached_dropoff || input_key == 'x') { // reached drop off point
 
                                         player->in_taxi = FALSE;
+                                        player->health = player->max_health; // heal player on drop off
+
                                         taxi->dropped = TRUE;  
                                         taxi->picked = FALSE;
                                         taxi->cooldown = FPS * 30; // reset cooldown 30s
 
-                                        float exit_x;
-                                        
-                                        if(taxi->position.x > COLS / 2) { // if closer to left go left if else go right
-                                                exit_x = COLS + 10;
-                                        }else {
-                                                exit_x = COLS - 10;
-                                        };
+                                        float exit_x = taxi->position.x / 2 ? COLS + 10 : COLS - 10; // if closer to left go left if else go right
+                                
 
-                                        const float exit_y = taxi->position.y;
+                                        float exit_y = taxi->position.y;
 
                                         calc_vel_taxi(taxi, exit_x, exit_y); // calc exit vector
 

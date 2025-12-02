@@ -13,9 +13,21 @@ typedef struct {
     float y;
 }velocity_t;
 
+typedef enum {
+    NORMAL,
+    STOPPED,
+    DASHING,
+}dash_state;
+
+typedef enum {
+    BLUE, // 0
+    GREEN, // 1
+    YELLOW, // 2
+    WHITE, // 3
+}color_t;
 
 typedef struct {
-    int stop_cooldown;
+    int stop_timer;
     int dash_cooldown;
     unsigned short displayed;
     int bounces_left;
@@ -29,14 +41,15 @@ typedef struct {
     int cooldown;
     int min_speed;
     int max_speed;
+    color_t color;
     position_t target_pos;
     position_t hunter_pos;
     velocity_t vel;
+    dash_state dash_state;
 }hunter_t;
 
 typedef struct {
     int bounces_max;
-    int color;
     int dmg;
     int spawn_chance;
     int min_speed;
@@ -45,6 +58,7 @@ typedef struct {
         int height;
         int width;
     }size;
+    color_t color;
 }type_t;
 
 void hunter_init(hunter_t *hunter, const type_t *type);
@@ -58,3 +72,5 @@ void hunter_dmg(hunter_t *hunter, player_t *player);
 void hunter_move(const hunter_t *hunter, const player_t *player);
 
 void calculate_vel_vec(hunter_t *hunter, const player_t *player, const int eva_time);
+
+int check_object_player_collision( const float obj_x, const float obj_y, const float player_x, const float player_y, const float obj_offset_x, const float obj_offset_y, const float player_offset_x, const float player_offset_y);
