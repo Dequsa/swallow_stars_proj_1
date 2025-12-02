@@ -11,7 +11,7 @@
 #endif //SWALLOW_GAME_PROJ_1_STARS_H
 
 typedef struct {
-    int x;
+    float x;
     float y;
 }position_t;
 
@@ -22,8 +22,6 @@ typedef struct {
     char sprite;
     position_t position;
 }star_t;
-
-
 
 void stars_init(star_t *star);
 

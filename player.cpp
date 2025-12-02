@@ -3,44 +3,7 @@
 //
 #include <iostream>
 #include "board.h"
-
-#define PLAYER_SPRITE_WIDTH 4
-
-// void load_config_player(player_t *player) {
-//     FILE *fptr = nullptr;
-//     fptr = fopen("./CONFIGS/stats.cfg", "r");
-//
-//     if (fptr == nullptr) {
-//         std::cout << "Failed to open config file..." << std::endl;
-//     }
-//
-//     int result = 0;
-//     char current_line[MAX_LINE_SIZE];
-//
-//     while (fgets( current_line, MAX_LINE_SIZE, fptr)) {
-//
-//         char name_of_variable_config[MAX_LINE_SIZE];
-//
-//         int temp_line = sscanf(current_line, "%d @%s", &result, name_of_variable_config);
-//
-//         if (strcmp(name_of_variable_config, "MAX_HEALTH") == 0 && temp_line > 0) {
-//
-//             player->health = result;
-//
-//         }else if (strcmp(name_of_variable_config, "MAX_SPEED") == 0 && temp_line > 0) {
-//
-//             player->max_speed = result;
-//
-//         }else if (strcmp(name_of_variable_config, "MIN_SPEED") == 0 && temp_line > 0) {
-//
-//             player->min_speed = result;
-//
-//         }
-//     }
-//
-//     fclose(fptr);
-// }
-
+#define PLAYER_SPRITE_WIDTH 5
 
 void init_player(player_t *player) {
 
@@ -49,10 +12,13 @@ void init_player(player_t *player) {
     player->current_speed = 0;
     player->current_heading = UP;
     player->stars_collected = 0;
+    player->current_amm_of_hunters_on_board = 0;
+    player->has_called_taxi = FALSE;
+    player->in_taxi = FALSE;
 
 
-    const char temp_sprite_1[] = "\\/\\/\0";
-    const char temp_sprite_2[] = "/\\/\\\0";
+    const char temp_sprite_1[] = "\\-V-/\0";
+    const char temp_sprite_2[] = "/-V-\\\0";
 
     int i = 0;
     while (temp_sprite_1[i] != '\0') {
@@ -71,7 +37,7 @@ void init_player(player_t *player) {
 }
 
 
-void out_of_bounds_check_player(float *new_x,  float *new_y) {
+void out_of_bounds_check_player(float *new_x,  float *new_y, int *heading) {
 
     const float min_x = 1.0f;
     const float max_x = (float)COLS - PLAYER_SPRITE_WIDTH - 1;
@@ -80,61 +46,26 @@ void out_of_bounds_check_player(float *new_x,  float *new_y) {
 
     if (*new_x < min_x) {
         *new_x = min_x;
+        if (*heading == LEFT) *heading = RIGHT;
     }else if (*new_x > max_x) {
         *new_x = max_x;
+        if (*heading == RIGHT) *heading = LEFT;
     }
 
     if (*new_y < min_y) {
         *new_y = min_y;
+        if (*heading == UP) *heading = DOWN;
     }else if (*new_y > max_y) {
         *new_y = max_y;
+        if (*heading == DOWN) *heading = UP;
     }
 }
 
 
-void move_player(player_t *player) {
-    switch (int key = getch()) {
-        case 'w': {
-            player->current_heading = UP;
-            break;
-        }
-        case 's': {
-            player->current_heading = DOWN;
-            break;
-        }
-        case 'a': {
-            player->current_heading = LEFT;
-            break;
-        }
-        case 'd': {
-            player->current_heading = RIGHT;
-
-            break;
-        }
-        case 'p': {
-            if (player->current_speed < player->max_speed) {
-                player->current_speed++;
-            }
-            //velocity_player(player);
-            break;
-        }
-        case 'o': {
-            if (player->current_speed > player->min_speed) {
-                player->current_speed--;
-            }
-            //velocity_player(player);
-            break;
-        }
-            case 'x': { // debug button
-
-            break;
-        }
-        default: {
-            player->current_heading = player->current_heading;
-            break;
-        }
-    }
-    //update_player_movement(player);
+void update_player_position(player_t *player) {
+    if (!player->in_taxi)
+    {
+    int *heading = &player->current_heading;
     const float move = (float)player->current_speed * 0.3f;
     float new_y = player->coordinates.y;
     float new_x = player->coordinates.x;
@@ -160,27 +91,60 @@ void move_player(player_t *player) {
     }
 
 
-    out_of_bounds_check_player(&new_x, &new_y);
+    out_of_bounds_check_player(&new_x, &new_y, heading);
 
     player->coordinates.x = new_x;
     player->coordinates.y = new_y;
+    }
 
-    // const float min_x = 1.0f;
-    // const float max_x = (float)COLS - PLAYER_SPRITE_WIDTH - 1;
-    // const float min_y = 1.0f;
-    // const float max_y = (float)LINES - STATUS_LINE_SIZE - 2.0f;
-    //
-    // if (new_x < min_x) {
-    //     new_x = min_x;
-    // }else if (new_x > max_x) {
-    //     new_x = max_x;
-    // }
-    //
-    // if (new_y < min_y) {
-    //     new_y = min_y;
-    // }else if (new_y > max_y) {
-    //     new_y = max_y;
-    // }
+}
+
+
+void move_player(player_t *player, int *input_key) {
+    int key;
+    switch (key = getch()) {
+        case 'w': {
+            player->current_heading = UP;
+            break;
+        }
+        case 's': {
+            player->current_heading = DOWN;
+            break;
+        }
+        case 'a': {
+            player->current_heading = LEFT;
+            break;
+        }
+        case 'd': {
+            player->current_heading = RIGHT;
+
+            break;
+        }
+        case 'p': {
+            if (player->current_speed < player->max_speed) {
+                player->current_speed++;
+            }
+            break;
+        }
+        case 'o': {
+            if (player->current_speed > player->min_speed) {
+                player->current_speed--;
+            }
+            break;
+        }
+            case 'x': { // debug button
+
+            break;
+        }
+        default: {
+            player->current_heading = player->current_heading;
+            break;
+        }
+    }
+
+    *input_key = key;
+    update_player_position(player);
+
 }
 
 
