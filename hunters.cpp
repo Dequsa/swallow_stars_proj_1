@@ -57,20 +57,22 @@ void check_dash(hunter_t *hunter, player_t *player, const int eva_time) {
     float t_y = hunter->target_pos.y;
 
     int *h_c = &hunter->dash_cooldown;
-
-    // if (*h_c <= 0
-    //     &&p_x != t_x
-    //     && p_y != t_y
-    //     && h_x >= p_x - 20.0f
-    //     && h_x <= p_x + 20.0f
-    //     && h_y >= p_y - 20.0f
-    //     && h_y <= p_y + 20.0f)
-    // {
-    //         hunter->dash_cooldown = FPS * DASH_COOLDOWN_SEC; // 1 second cooldown
-    //         hunter_dash(hunter, player, eva_time);
-    // }
+    int *h_t = &hunter->stop_timer;
 
     if (check_position(p_x, p_y, h_x, h_y, DASH_RADIUS) && *h_c <= 0) {
+
+        *h_t = FPS * 2; // stop for 1 second
+
+        if (*h_t > 0) {
+
+            hunter->vel.x = 0.0f;
+            hunter->vel.y = 0.0f;
+
+            (*h_t)--;
+
+            return;
+
+        }
 
         hunter->dash_cooldown = FPS * DASH_COOLDOWN_SEC; // 1 second cooldown
         hunter_dash(hunter, player, eva_time);
@@ -163,7 +165,7 @@ void hunter_spawn(hunter_t *hunter, player_t *player, const type_t *type, const 
 
 
                 hunter[i].bounces_done = 0;
-                hunter->dash_cooldown = 0;
+                hunter->dash_cooldown = -1;
                 hunter[i].displayed = FALSE;
 
                 const int X_MARGIN = 2;

@@ -15,7 +15,7 @@ typedef struct {
 
 
 typedef struct {
-    int stop_cooldown;
+    int stop_timer;
     int dash_cooldown;
     unsigned short displayed;
     int bounces_left;
