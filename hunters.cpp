@@ -7,6 +7,9 @@
 #define PLAYABLE_AREA_SIZE_X (COLS - 2)
 #define EVALUATION_BY_LEVEL 1
 #define EVALUATION_BY_TIME 1
+#define DASH_COOLDOWN_SEC 1
+#define DASH_RADIUS (15.0f)
+
 
 void calculate_vel_vec(hunter_t *hunter, const player_t *player,const int eva_time) {
 
@@ -55,17 +58,24 @@ void check_dash(hunter_t *hunter, player_t *player, const int eva_time) {
 
     int *h_c = &hunter->dash_cooldown;
 
-    if (*h_c <= 0
-        &&p_x != t_x
-        && p_y != t_y
-        && h_x >= p_x - 20.0f
-        && h_x <= p_x + 20.0f
-        && h_y >= p_y - 20.0f
-        && h_y <= p_y + 20.0f)
-        {
-            hunter->dash_cooldown = FPS * 3; // 5 second cooldown
-            hunter_dash(hunter, player, eva_time);
-        }
+    // if (*h_c <= 0
+    //     &&p_x != t_x
+    //     && p_y != t_y
+    //     && h_x >= p_x - 20.0f
+    //     && h_x <= p_x + 20.0f
+    //     && h_y >= p_y - 20.0f
+    //     && h_y <= p_y + 20.0f)
+    // {
+    //         hunter->dash_cooldown = FPS * DASH_COOLDOWN_SEC; // 1 second cooldown
+    //         hunter_dash(hunter, player, eva_time);
+    // }
+
+    if (check_position(p_x, p_y, h_x, h_y, DASH_RADIUS) && *h_c <= 0) {
+
+        hunter->dash_cooldown = FPS * DASH_COOLDOWN_SEC; // 1 second cooldown
+        hunter_dash(hunter, player, eva_time);
+
+    }
 
     if (*h_c > 0) {
 
@@ -73,6 +83,7 @@ void check_dash(hunter_t *hunter, player_t *player, const int eva_time) {
 
     }
 }
+
 
 void hunter_bounce(hunter_t *hunter) {
     const float min_x = 1.0f;

@@ -21,6 +21,7 @@ typedef struct {
     position_t drop_off;
 }taxi_t;
 
+int check_position(float tar_x, float tar_y, float source_x, float source_y, float r);
 
 void taxi_spawn(taxi_t *taxi);
 

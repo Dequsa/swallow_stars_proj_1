@@ -3,6 +3,7 @@
 //
 
 #include "board.h"
+#include <cstring>
 #define SCORE_P "./SCORES/scores.txt"
 #define AMM_OF_SCORES_TO_SHOW 10
 
@@ -212,7 +213,7 @@ void update_screen(const player_t *player, const star_t *stars, hunter_t *hunter
  }
 
 
-void store_score(const char* player_name, int score, int* places, char** player_names, int *scores) {
+void store_score(const char* player_name, int score, score_entry_t *top_scores) {
 
  FILE* fptr = fopen(SCORE_P, "a");
 
@@ -229,8 +230,13 @@ fptr = fopen(SCORE_P, "r");
  if (fptr == nullptr) {
   return;
  }
+  int n = 0;
+  char buffer[2];
+  while (fgets(buffer, 2, fptr) != nullptr) {
+    n++;
+  }
 
- player_data all_scores[256];
+ player_data_t *all_scores = new player_data_t[n];
  int score_count = 0;
 
  while (fscanf(fptr, "%s: %d" ,all_scores[score_count].player_name, &all_scores[score_count].score) != EOF) {
@@ -243,7 +249,7 @@ fptr = fopen(SCORE_P, "r");
  for (int i = 0; i < score_count - 1; i++) {
   for (int j = i + 1; j < score_count; j++) {
    if (all_scores[j].score > all_scores[i].score) {
-    player_data temp = all_scores[i];
+    player_data_t temp = all_scores[i];
     all_scores[i] = all_scores[j];
     all_scores[j] = temp;
    }
@@ -252,28 +258,36 @@ fptr = fopen(SCORE_P, "r");
 
  // Store top scores
  for (int i = 0; i < AMM_OF_SCORES_TO_SHOW && i < score_count; i++) {
-  places[i] = i + 1;
-  player_names[i] = all_scores[i].player_name;
-  scores[i] = all_scores[i].score;
+  
+  int j = 0;
+  
+  while(all_scores[i].player_name[j] != '\0') {
+    
+    all_scores[i].player_name[j] = top_scores[i].player_name[j];
+    j++;
+  }
+  top_scores[i].player_name[j] = '\0';
+
+  top_scores[i].score = all_scores[i].score;
  }
 
+ delete[] all_scores;
 }
 
 
-void display_scoreboard(int* places, char** player_names, int* scores) {
+void display_scoreboard(score_entry_t *top_scores) {
 
  mvwprintw(game_window, 3, COLS / 2 - 10, "SCOREBOARD");
 
  for (int i = 0; i < AMM_OF_SCORES_TO_SHOW; i++) {
 
-  if (player_names[i] == nullptr) {
+  if (top_scores[i].player_name == nullptr) {
    break;
   }
 
-  mvwprintw(game_window, 5 + i, COLS / 2 - 15, "%d. %s - %d", i, player_names[i], scores[i]);
+    mvwprintw(game_window, 5 + i, COLS / 2 - 15, "%d. %s - %d", i, top_scores[i].player_name, top_scores[i].score);
 
- }
- free(player_names);
+  }
 }
 
 
@@ -289,12 +303,10 @@ void game_over(char* player_name, const int score) {
 
   mvwprintw(game_window, LINES/2, COLS/2 - 10, "GAME OVER");
   
-  int places[256];
-  char *player_names[256];
-  int scores[256];
+  score_entry_t top_scores[AMM_OF_SCORES_TO_SHOW]{};
  
-  store_score(player_name, score, places , player_names, scores);
-  display_scoreboard(places, player_names, scores);
+  store_score(player_name, score, top_scores);
+  display_scoreboard(top_scores);
 
   wrefresh(game_window);
 

@@ -276,9 +276,9 @@ int check_over(const int time_left, const int health, int* game_over, const int 
 }
 
 
-void save_score(int *player_score, int collected_stars, int time_left, int time_for_map) {
+void save_score(int *player_score, int *collected_stars, int *time_left, int *time_for_map) {
 
-    *player_score += collected_stars * 100 + time_left / FPS + time_for_map/ FPS;
+    *player_score += *collected_stars * 100 +  *time_for_map / FPS - *time_left / FPS;
 
 }
 
@@ -334,7 +334,7 @@ void main_game_loop(board_t *board, board_t *boards_cache, player_t *player, hun
 
             if (check_over(board->time_left, player->health, &board->is_over, player->stars_collected, board->star_quota)) {
                 // save score
-                save_score(&player->score, player->stars_collected, board->time_left, boards_cache[i].time_left);
+                save_score(&player->score, &player->stars_collected, &board->time_left, &boards_cache[i].time_left);
                 break;
             }
 

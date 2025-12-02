@@ -3,11 +3,10 @@
 //
 
 #include "board.h"
-#include <cmath>
 #define PLAYABLE_AREA_X (1 + (COLS - 1))
 #define PLAYABLE_AREA_Y (LINES - STATUS_LINE_SIZE - 1)
 #define BASE_SPEED_TAXI 0.5f
-#define PICKUP_RADIUS 1.0f
+#define PICKUP_RADIUS 1.5f
 #define TAXI_WIDTH 3
 #define SPAWN_TAXI_X (float)(TAXI_WIDTH)
 #define SPAWN_TAXI_Y (float)(TAXI_WIDTH)
@@ -45,13 +44,13 @@ void calc_vel_taxi(taxi_t *taxi, const float target_pos_x, const float target_po
 // }
 
 
-int check_position(float pos_x, float pos_y, float taxi_x, float taxi_y) {
+int check_position(float tar_x, float tar_y, float source_x, float source_y, float r) {
 
-        const float distance_x = taxi_x -  pos_x;
-        const float distance_y = taxi_y - pos_y ;
+        const float distance_x = source_x -  tar_x;
+        const float distance_y = source_y - tar_y ;
         const float distance = sqrt(distance_x * distance_x + distance_y * distance_y);
 
-        if (distance < PICKUP_RADIUS) {
+        if (distance <= r) {
                 return 1;
         }
 
@@ -102,7 +101,7 @@ void taxi_update(taxi_t *taxi, player_t *player, int *input_key) {
                                 taxi->position.x += taxi->velocity.x;
                                 taxi->position.y += taxi->velocity.y;
 
-                                int collision_taxi_player = check_position(player->coordinates.x, player->coordinates.y, taxi->position.x, taxi->position.y);
+                                int collision_taxi_player = check_position(player->coordinates.x, player->coordinates.y, taxi->position.x, taxi->position.y, PICKUP_RADIUS);
 
                                 if ( collision_taxi_player ) { // reached playe 
                                         
@@ -131,7 +130,7 @@ void taxi_update(taxi_t *taxi, player_t *player, int *input_key) {
                                 player->coordinates.x = taxi->position.x;
                                 player->coordinates.y = taxi->position.y;
 
-                                int reached_dropoff = check_position(taxi->drop_off.x, taxi->drop_off.y, taxi->position.x, taxi->position.y);
+                                int reached_dropoff = check_position(taxi->drop_off.x, taxi->drop_off.y, taxi->position.x, taxi->position.y, PICKUP_RADIUS);
 
                                 if (reached_dropoff || *input_key == 'x') { // reached drop off point
 

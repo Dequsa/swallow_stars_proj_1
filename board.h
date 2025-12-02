@@ -5,9 +5,10 @@
 #ifndef SWALLOW_GAME_PROJ_1_BOARD_H
 #define SWALLOW_GAME_PROJ_1_BOARD_H
 
-#include "curses.h"
+#include <cmath>
 #include <cstdlib>
 #include <ctime>
+#include "curses.h"
 #include "player.h"
 #include "stars.h"
 #include "hunters.h"
@@ -39,8 +40,12 @@ typedef struct {
     int place;
     char player_name[MAX_PLAYER_NAME_LENGTH];
     int score;
-} player_data;
+} player_data_t;
 
+typedef struct {
+    char player_name[MAX_PLAYER_NAME_LENGTH];
+    int score;
+} score_entry_t;
 
 void init_board(board_t *board);
 
