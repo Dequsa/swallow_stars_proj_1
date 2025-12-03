@@ -17,13 +17,13 @@
 #define STATUS_LINE_SIZE 3 // size of status bar in lines
 #define FPS 60 // number of frames for bird animations
 #define MAX_PLAYER_NAME_LENGTH 256
-#define WHITE 0
 #define GREEN 1
 #define YELLOW 2
 #define RED 3
 #define MAGENTA 4
 #define CYAN 5
 #define BLUE 6
+#define WHITE 7
 
 #endif //SWALLOW_GAME_PROJ_1_BOARD_H
 

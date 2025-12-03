@@ -3,9 +3,9 @@
 #include <cstring>
 #include <time.h>
 #include <sys/time.h> // For gettimeofday() to get real-world time
-#define CFG_S "./CONFIGS/stats.cfg"
-#define CFG_H "./CONFIGS/hunters.cfg"
-#define CFG_B "./CONFIGS/board.cfg"
+#define CFG_S "../CONFIGS/stats.cfg"
+#define CFG_H "../CONFIGS/hunters.cfg"
+#define CFG_B "../CONFIGS/board.cfg"
 #define ERR_S 0
 #define CONFIG_ERR (-1)
 #define ERR_NPTR (-2)

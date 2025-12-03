@@ -4,7 +4,7 @@
 
 #include "board.h"
 #include <cstring>
-#define SCORE_P "./SCORES/scores.txt"
+#define SCORE_P "../SCORES/scores.txt"
 #define AMM_OF_SCORES_TO_SHOW 10
 
 WINDOW *game_window = nullptr;
@@ -15,7 +15,7 @@ void init_board(board_t *board) { // initialize everything for the board and sta
 
      //------------ CURSES STUFF -----------
      initscr(); // start screen curses
-     start_color(); // sets colors on on the termianl
+     start_color(); // sets colors on the terminal
      has_colors(); // checks if terminal has colors
      cbreak(); // stop the buffer input is real-time
      noecho(); // do not show current input
@@ -23,13 +23,13 @@ void init_board(board_t *board) { // initialize everything for the board and sta
      nodelay(stdscr, TRUE); // non blocking input
      keypad(stdscr, TRUE); //enable arrows
      // init colors
-     init_pair(0, COLOR_WHITE, COLOR_BLACK);
      init_pair(1, COLOR_GREEN, COLOR_BLACK);
      init_pair(2, COLOR_YELLOW, COLOR_BLACK); // taxi
      init_pair(3, COLOR_RED, COLOR_BLACK);
      init_pair(4, COLOR_MAGENTA, COLOR_BLACK); // player
      init_pair(5, COLOR_CYAN, COLOR_BLACK); 
      init_pair(6, COLOR_CYAN, COLOR_BLACK);
+     init_pair(7, COLOR_WHITE, COLOR_BLACK);
      // ------------------------------------
 
      const int game_height = LINES - STATUS_LINE_SIZE;
