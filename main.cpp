@@ -284,7 +284,7 @@ void hunters_all(hunter_t *hunters, player_t *player, const type_t *hunter_types
 
     const int frames_passed = total_level_frames - time_left;
 
-    const int difficulty_adder = (frames_passed * 9) / total_level_frames;
+    const int difficulty_adder = frames_passed / total_level_frames;
 
     const int eva_time = 1 + difficulty_adder;
 

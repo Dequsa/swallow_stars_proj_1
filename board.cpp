@@ -16,19 +16,19 @@ void init_board(board_t *board) { // initialize everything for the board and sta
      //------------ CURSES STUFF -----------
      initscr(); // start screen curses
      start_color(); // sets colors on the terminal
-     has_colors(); // checks if terminal has colors
      cbreak(); // stop the buffer input is real-time
      noecho(); // do not show current input
      curs_set(FALSE); // disable cursor display
      nodelay(stdscr, TRUE); // non blocking input
      keypad(stdscr, TRUE); //enable arrows
+
      // init colors
      init_pair(1, COLOR_GREEN, COLOR_BLACK);
      init_pair(2, COLOR_YELLOW, COLOR_BLACK); // taxi
      init_pair(3, COLOR_RED, COLOR_BLACK);
      init_pair(4, COLOR_MAGENTA, COLOR_BLACK); // player
-     init_pair(5, COLOR_CYAN, COLOR_BLACK); 
-     init_pair(6, COLOR_CYAN, COLOR_BLACK);
+     init_pair(5, COLOR_CYAN, COLOR_BLACK);
+     init_pair(6, COLOR_BLUE, COLOR_BLACK);
      init_pair(7, COLOR_WHITE, COLOR_BLACK);
      // ------------------------------------
 

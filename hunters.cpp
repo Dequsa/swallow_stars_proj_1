@@ -10,7 +10,7 @@
 #define DASH_COOLDOWN_SEC 1
 #define STOP_TIME_SEC 1
 #define DASH_RADIUS (15.0f)
-#define DASH_SPEED_MULTIPLIER 3.5f
+#define DASH_SPEED_MULTIPLIER 2.5f
 
 
 void calculate_vel_vec(hunter_t *hunter, const player_t *player,const int eva_time) {
