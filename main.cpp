@@ -2,6 +2,7 @@
 #include "board.h" // connects all libs together
 #include <cstring>
 #include <time.h>
+#include <sys/time.h> // For gettimeofday() to get real-world time
 #define CFG_S "./CONFIGS/stats.cfg"
 #define CFG_H "./CONFIGS/hunters.cfg"
 #define CFG_B "./CONFIGS/board.cfg"
@@ -167,6 +168,29 @@ int load_config_board(FILE* fptr, board_t *boards_cache) {
 }
 
 
+double get_current_time_seconds() {
+
+    struct timeval current_time;
+
+    gettimeofday(&current_time, nullptr);
+
+    return current_time.tv_sec + (current_time.tv_usec / 1000000.0);
+
+}
+
+
+int calculate_time_left_frames(const board_t *board) {
+
+    const double current_time = get_current_time_seconds();
+
+    const double elapsed_time = current_time - board->level_start_time;
+
+    const double time_remaining = board->time_limit_seconds - elapsed_time;
+
+    return (int)(time_remaining * FPS);
+}
+
+
 void hunter_earase_all(hunter_t *hunters, player_t *player) {
 
     for (int i = 0; i < MAX_AMM_HUNTERS; i++) {
@@ -185,6 +209,8 @@ void level_complete(board_t *board, const board_t *boards_cache ,player_t *playe
     board->max_hunters = boards_cache[current_lvl].max_hunters;
     board->star_quota = boards_cache[current_lvl].star_quota;
     board->eva_lvl = boards_cache[current_lvl].eva_lvl;
+    board->time_limit_seconds = boards_cache[current_lvl].time_left;
+    board->level_start_time = get_current_time_seconds();
     board->time_left = boards_cache[current_lvl].time_left * FPS;
 
     player->health = player->max_health;
@@ -332,6 +358,8 @@ void main_game_loop(board_t *board, board_t *boards_cache, player_t *player, hun
             }
 
             stars_all(&stars_count, player, stars);
+            
+            board->time_left = calculate_time_left_frames(board);
 
             hunters_all(hunters, player, hunter_types,boards_cache[i].time_left, i, board->time_left);
 
@@ -339,7 +367,6 @@ void main_game_loop(board_t *board, board_t *boards_cache, player_t *player, hun
 
             nanosleep(&req, &rem);
 
-            board->time_left--;
 
             if (check_over(board->time_left, player->health, &board->is_over, player->stars_collected, board->star_quota)) {
                 // save score

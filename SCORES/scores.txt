@@ -12,3 +12,8 @@ p 8340
 asdp 1400
 ssss 1400
 asd 1990
+asd 0
+ll 0
+asd 0
+asdad 4620
+asdas 5300

@@ -33,7 +33,9 @@ typedef struct {
     int current_amm_of_hunters_on_board;
     int eva_time_interval;
     int eva_lvl;
-    int time_left;
+    int time_left; // Deprecated: kept for backwards compatibility, now calculated from delta_time
+    double level_start_time; // Real-world time when level started (in seconds)
+    double time_limit_seconds; // How many seconds the level should last
 } board_t;
 
 typedef struct {

@@ -24,7 +24,7 @@ void init_board(board_t *board) { // initialize everything for the board and sta
      has_colors(); // checks if terminal has colors
      cbreak(); // stop the buffer input is real-time
      noecho(); // do not show current input
-     curs_set(0); // disable cursor display
+     curs_set(FALSE); // disable cursor display
      nodelay(stdscr, TRUE); // non blocking input
      keypad(stdscr, TRUE); //enable arrows
      // init colors
@@ -68,7 +68,7 @@ void update_time(const int time_left, const float text_max_pos) {
 
  wattron(status_window, COLOR_PAIR(color));
 
- mvwprintw(status_window, 1, (int)(text_max_pos * 0.95f), "Timeleft: %d", time_left_seen);
+ mvwprintw(status_window, 1, (int)(text_max_pos * 0.95f), "Timeleft: %d sec.", time_left_seen);
 
  wattroff(status_window, COLOR_PAIR(color));
 
