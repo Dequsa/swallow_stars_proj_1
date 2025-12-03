@@ -317,15 +317,15 @@ void taxi_all(player_t *player, taxi_t *taxi, const int input_key) {
 }
 
 
-int check_over(const int time_left, const int health, int* game_over, const int collected_stars, const unsigned int star_quota) {
+int check_over(const int time_left, const int health, int* game_over, const int collected_stars, const unsigned int star_quota, int input_key) {
 
-    if (time_left <= 0 || health <= 0) {
+    if (time_left <= 0 || health <= 0 || input_key == 'q') {
 
         *game_over = TRUE;
 
         return 1;
 
-    }else if (collected_stars == star_quota) {
+    }else if (collected_stars == star_quota || input_key == 'n') {
 
         return 1;
 
@@ -382,7 +382,7 @@ void main_game_loop(board_t *board, board_t *boards_cache, player_t *player, hun
             nanosleep(&req, &rem);
 
 
-            if (check_over(board->time_left, player->health, &board->is_over, player->stars_collected, board->star_quota)) {
+            if (check_over(board->time_left, player->health, &board->is_over, player->stars_collected, board->star_quota, input_key)) {
                 // save score
                 save_score(&player->score, &player->stars_collected, &board->time_left);
                 break;
@@ -391,9 +391,13 @@ void main_game_loop(board_t *board, board_t *boards_cache, player_t *player, hun
         }
 
         if (board->is_over) {
+            if (i >= LEVEL_AMM - 1) {
+                show_win_screen();
+            }
             break;
         }
     }
+
 
     game_over(player_name, player->score);
 

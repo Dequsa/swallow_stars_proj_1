@@ -6,11 +6,6 @@
 #include <cstring>
 #define SCORE_P "./SCORES/scores.txt"
 #define AMM_OF_SCORES_TO_SHOW 10
-#define GREEN 1
-#define YELLOW 2
-#define RED 3
-#define MAGENTA 4
-#define CYAN 5
 
 WINDOW *game_window = nullptr;
 WINDOW *status_window = nullptr;
@@ -28,11 +23,13 @@ void init_board(board_t *board) { // initialize everything for the board and sta
      nodelay(stdscr, TRUE); // non blocking input
      keypad(stdscr, TRUE); //enable arrows
      // init colors
+     init_pair(0, COLOR_WHITE, COLOR_BLACK);
      init_pair(1, COLOR_GREEN, COLOR_BLACK);
-     init_pair(2, COLOR_YELLOW, COLOR_BLACK);
+     init_pair(2, COLOR_YELLOW, COLOR_BLACK); // taxi
      init_pair(3, COLOR_RED, COLOR_BLACK);
      init_pair(4, COLOR_MAGENTA, COLOR_BLACK); // player
-     init_pair(5, COLOR_CYAN, COLOR_BLACK); // taxi
+     init_pair(5, COLOR_CYAN, COLOR_BLACK); 
+     init_pair(6, COLOR_CYAN, COLOR_BLACK);
      // ------------------------------------
 
      const int game_height = LINES - STATUS_LINE_SIZE;
@@ -46,6 +43,7 @@ void init_board(board_t *board) { // initialize everything for the board and sta
      board->is_over = FALSE;
 
 }
+
 
 void update_time(const int time_left, const float text_max_pos) {
 
@@ -97,14 +95,16 @@ void update_status(const player_t *player, WINDOW *window ,const char *name, con
 
 void update_player( const player_t *player, WINDOW *window, const int current_frame) {
 
-  int color = MAGENTA;
+  int color;
   const char *sprite_to_draw;
 
-  if (current_frame >= 0 && current_frame < FPS/15) {
+  color = choose_color_player(player->health, player->max_health);
+
+  if (current_frame >= 0 && current_frame < FPS / 15) {
 
     sprite_to_draw = player->frame_one;
   
-  } else if (current_frame >= FPS/15) {
+  } else {
 
     sprite_to_draw = player->frame_two;
   }
@@ -128,11 +128,11 @@ void update_star(const star_t *star) {
 
     if (star->position.y > COLS / 5 && star->position.y < COLS / 2) {
 
-     color = RED;
+     color = BLUE;
 
     } else {
 
-      color = YELLOW;
+      color = CYAN;
 
     }
 
@@ -185,12 +185,12 @@ void update_taxi(taxi_t *taxi, const player_t *player) {
 
  if (taxi->visible) {
 
-  int color = CYAN;
+  int color = YELLOW;
   
   for (int i = 0; i < 3; i ++) {
 
     wattron(game_window, COLOR_PAIR(color));
-    mvwprintw(game_window, (int)taxi->position.y, (int)taxi->position.x + i, "T");
+    mvwprintw(game_window, (int)taxi->position.y, (int)taxi->position.x + i, "^");
 
   }
   wattroff(game_window, COLOR_PAIR(color));
@@ -357,8 +357,8 @@ void show_lvl_complete(const int current_lvl) {
 
  werase(game_window);
 
- mvwprintw(game_window, LINES/2, COLS/2, "%d COMPLETED", current_lvl + 1);
- mvwprintw(game_window, LINES/2 + 1, COLS/2, "PRESS ANY BUTTON TO CONTINUE");
+ mvwprintw(game_window, LINES / 2, COLS / 2, "%d COMPLETED", current_lvl);
+ mvwprintw(game_window, LINES / 2 + 1, COLS / 2, "PRESS ANY BUTTON TO CONTINUE");
 
  wrefresh(game_window);
 
@@ -395,5 +395,31 @@ void get_player_name(char *name) {
  noecho(); // hide input again
  curs_set(0); // hide cursor
  nodelay(stdscr, TRUE); // non-blocking input
+
+}
+
+void show_win_screen() {
+
+ werase(game_window);
+ box(game_window, 0, 0);
+
+ mvwprintw(game_window, LINES / 2, COLS / 2 - 5, "YOU WIN!");
+ mvwprintw(game_window, LINES / 2 + 1, COLS / 2 - 15, "PRESS ANY BUTTON TO CONTINUE");
+
+ wrefresh(game_window);
+
+ nodelay(stdscr, FALSE);
+
+ timespec req{};
+ timespec rem{};
+ req.tv_nsec = 0;
+ req.tv_sec = 1; // 1s sleep so player doesn't instantly turn  off-screen
+
+ nanosleep(&req, &rem);
+
+ while (getch() == -1) {
+
+ }
+ nodelay(stdscr, TRUE);
 
 }

@@ -12,6 +12,7 @@
 #endif //SWALLOW_GAME_PROJ_1_PLAYER_H
 
 typedef struct {
+    int color;
     int score;
     int in_taxi;
     int max_health;
@@ -42,10 +43,12 @@ typedef enum {
 
 typedef enum {
     LOW_HEALTH = 1,
-    MEDIUM_HEALTH = 2,
-    MAX_HEALTH = 3
+    MEDIUM_HEALTH,
+    MAX_HEALTH
 } swallow_colors_t;
 
 void init_player(player_t *player);
 
 void move_player(player_t *player, int *input_key);
+
+int choose_color_player(int health, int max_health);

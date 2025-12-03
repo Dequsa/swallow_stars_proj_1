@@ -4,11 +4,13 @@
 #include <iostream>
 #include "board.h"
 #define PLAYER_SPRITE_WIDTH 5
+#define LOW_HEALTH 0.3f
+#define MEDIUM_HEALTH 0.7f
 
 void init_player(player_t *player) {
 
-    player->coordinates.x = (float)COLS/2; // middle of the screen x
-    player->coordinates.y = (float)LINES/2; // middle of the screen y
+    player->coordinates.x = (float)COLS / 2; // middle of the screen x
+    player->coordinates.y = (float)LINES / 2; // middle of the screen y
     player->current_speed = 0;
     player->current_heading = UP;
     player->stars_collected = 0;
@@ -34,6 +36,20 @@ void init_player(player_t *player) {
     }
     player->frame_two[i] = '\0';
 
+}
+
+
+int choose_color_player(int health, int max_health) {
+
+    const float health_ratio = (float)health / (float)max_health;
+
+    if (health_ratio <= LOW_HEALTH) {
+        return RED;
+    } else if (health_ratio <= MEDIUM_HEALTH) {
+        return YELLOW;
+    } else {
+        return GREEN;
+    }
 }
 
 
@@ -133,7 +149,7 @@ void move_player(player_t *player, int *input_key) {
             break;
         }
             case 'x': { // debug button
-                
+
             break;
         }
         default: {
