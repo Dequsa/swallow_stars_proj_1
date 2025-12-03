@@ -41,7 +41,7 @@ void hunter_dash(hunter_t *hunter, const player_t *player, int eva_time) {
     float p_y = player->coordinates.y;
     const float d_multiplier = DASH_SPEED_MULTIPLIER;
 
-    hunter->target_pos.x = p_x;
+    hunter->target_pos.x = p_x; // target current player position
     hunter->target_pos.y = p_y;
 
     calculate_vel_vec(hunter, player, eva_time * d_multiplier);
@@ -64,7 +64,7 @@ void check_dash(hunter_t *hunter, player_t *player, const int eva_time) {
 
     }
 
-    if (hunter->dash_state == STOPPED) {
+    if (hunter->dash_state == STOPPED) { // stop the hunter for a moment
 
         hunter->vel.x = 0.0f;
         hunter->vel.y = 0.0f;
@@ -74,13 +74,14 @@ void check_dash(hunter_t *hunter, player_t *player, const int eva_time) {
             hunter->dash_state = DASHING;
         }
 
-    } else if (hunter->dash_state == DASHING) {
+    } else if (hunter->dash_state == DASHING) { // dash towards player
 
-        hunter->dash_cooldown = FPS * DASH_COOLDOWN_SEC; // 1 second cooldown
+        hunter->dash_cooldown = FPS * DASH_COOLDOWN_SEC; // set 1 second cooldown so they don't dash again instantly
         hunter->dash_state = NORMAL;
+
         hunter_dash(hunter, player, eva_time);
 
-    }else if (check_position(p_x, p_y, h_x, h_y, DASH_RADIUS) && hunter->dash_cooldown <= 0) {
+    }else if (check_position(p_x, p_y, h_x, h_y, DASH_RADIUS) && hunter->dash_cooldown <= 0) { // if within range of dashing and cooldown is off set hunter state to STOPPED "taxi.h"
 
         hunter->dash_state = STOPPED;
 
@@ -97,8 +98,8 @@ void hunter_bounce(hunter_t *hunter) {
 
     // x bounce
     if (hunter->hunter_pos.x < min_x) {
-        hunter->hunter_pos.x = min_x + (min_x - hunter->hunter_pos.x); // reflect inside
-        hunter->vel.x *= -1;
+        hunter->hunter_pos.x = min_x + (min_x - hunter->hunter_pos.x); // set position back to max - overshoot for safety
+        hunter->vel.x *= -1; // invert velocity
         hunter->bounces_done++;
     }
 
@@ -164,9 +165,9 @@ void hunter_spawn(hunter_t *hunter, player_t *player, const type_t *type, const 
                 const unsigned int h_type = hunter[i].hunter_type;
 
                 const int base_bounces = 1 + (rand() % type[h_type].bounces_max); //
-                hunter[i].bounces_left = base_bounces * eva_time;       // scale by eva_time & level
+                
+                hunter[i].bounces_left = base_bounces * eva_time;       // scale by eva_time
                 hunter[i].bounces_done = 0;
-
                 hunter[i].dash_state = NORMAL;
                 hunter[i].stop_timer = 0;
                 hunter[i].dash_cooldown = FPS * 2;
@@ -227,7 +228,7 @@ void hunter_update(hunter_t *hunter, player_t *player, const int eva_time) {
             hunter_bounce(&hunter[i]);
             hunter_dmg(hunter, player);
 
-            if (hunter[i].bounces_left == hunter[i].bounces_done) { // despawn after bouncing
+            if (hunter[i].bounces_left <= hunter[i].bounces_done) { // despawn after bouncing
                 hunter[i].is_active = FALSE;
                 hunter[i].bounces_done = 0;
                 player->current_amm_of_hunters_on_board--;

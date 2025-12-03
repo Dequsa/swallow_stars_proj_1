@@ -4,7 +4,7 @@
 
 #ifndef SWALLOW_GAME_PROJ_1_HUNTERS_H
 #define SWALLOW_GAME_PROJ_1_HUNTERS_H
-#define MAX_AMM_HUNTERS 20 // 4 easy 4 med-easy 4 med-hard 4 hard 4 hard-hard
+#define MAX_AMM_HUNTERS 50
 #define HUNTER_TYPE_AMM 5
 #endif //SWALLOW_GAME_PROJ_1_HUNTERS_H
 
@@ -18,13 +18,6 @@ typedef enum {
     STOPPED,
     DASHING,
 }dash_state;
-
-typedef enum {
-    BLUE, // 0
-    GREEN, // 1
-    YELLOW, // 2
-    WHITE, // 3
-}color_t;
 
 typedef struct {
     int stop_timer;
@@ -41,7 +34,7 @@ typedef struct {
     int cooldown;
     int min_speed;
     int max_speed;
-    color_t color;
+    int color;
     position_t target_pos;
     position_t hunter_pos;
     velocity_t vel;
@@ -54,11 +47,11 @@ typedef struct {
     int spawn_chance;
     int min_speed;
     int max_speed;
+    int color;
     struct size {
         int height;
         int width;
     }size;
-    color_t color;
 }type_t;
 
 void hunter_init(hunter_t *hunter, const type_t *type);

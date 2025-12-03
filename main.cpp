@@ -64,7 +64,7 @@ int load_config_hunter(FILE* fptr, type_t *t) {
     int c_a_n = -1;
     while (fgets( c_l, MAX_LINE_SIZE, fptr)) {
 
-        char n_o_v_h[MAX_LINE_SIZE]; // name of line variable hunter
+        char n_o_v_h[MAX_LINE_SIZE]; // name of line variable hunter e.g HUNTER_DMG
 
         int temp_line = sscanf(c_l, "%d @%s", &r, n_o_v_h);
 
@@ -110,7 +110,7 @@ int load_config_hunter(FILE* fptr, type_t *t) {
 
         }else if (strcmp(n_o_v_h, "COLOR") == 0) {
 
-            //t[c_a_n].color = r;
+            t[c_a_n].color = r;
 
         }
     }

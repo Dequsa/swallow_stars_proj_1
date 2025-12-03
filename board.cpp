@@ -4,14 +4,20 @@
 
 #include "board.h"
 #include <cstring>
-#define SCORE_P "../SCORES/scores.txt"
+#define SCORE_P "./SCORES/scores.txt"
 #define AMM_OF_SCORES_TO_SHOW 10
+#define GREEN 1
+#define YELLOW 2
+#define RED 3
+#define MAGENTA 4
+#define CYAN 5
 
 WINDOW *game_window = nullptr;
 WINDOW *status_window = nullptr;
 WINDOW *game_over_window = nullptr;
 
 void init_board(board_t *board) { // initialize everything for the board and status bar
+
      //------------ CURSES STUFF -----------
      initscr(); // start screen curses
      start_color(); // sets colors on on the termianl
@@ -21,6 +27,12 @@ void init_board(board_t *board) { // initialize everything for the board and sta
      curs_set(0); // disable cursor display
      nodelay(stdscr, TRUE); // non blocking input
      keypad(stdscr, TRUE); //enable arrows
+     // init colors
+     init_pair(1, COLOR_GREEN, COLOR_BLACK);
+     init_pair(2, COLOR_YELLOW, COLOR_BLACK);
+     init_pair(3, COLOR_RED, COLOR_BLACK);
+     init_pair(4, COLOR_MAGENTA, COLOR_BLACK); // player
+     init_pair(5, COLOR_CYAN, COLOR_BLACK); // taxi
      // ------------------------------------
 
      const int game_height = LINES - STATUS_LINE_SIZE;
@@ -29,7 +41,6 @@ void init_board(board_t *board) { // initialize everything for the board and sta
      const int status_width = COLS;
 
      game_window = newwin(game_height, game_width, 0, 0);
-     //game_area_window = derwin(game_window, game_height - 2, game_width - 2, 1, 1);
      status_window = newwin(status_height, status_width, game_height, 0);
 
      board->is_over = FALSE;
@@ -38,33 +49,29 @@ void init_board(board_t *board) { // initialize everything for the board and sta
 
 void update_time(const int time_left, const float text_max_pos) {
 
- const int time_left_seen = time_left / 60;
+ const int time_left_seen = time_left / FPS;
+ int color = GREEN;
 
  if (time_left_seen > 60) {
-  init_pair(1, COLOR_GREEN, COLOR_BLACK);
 
-  wattron(status_window, COLOR_PAIR(1));
-  mvwprintw(status_window, 1, (int)(text_max_pos * 0.95f), "Timeleft: %d sec.", time_left_seen);
-  wattroff(status_window, COLOR_PAIR(1));
- }
+  color = GREEN;
 
- if (time_left_seen > 20 && time_left_seen <= 60) {
+ } else if (time_left_seen > 20 && time_left_seen <= 60) {
 
-  init_pair(1, COLOR_YELLOW, COLOR_BLACK);
-
-  wattron(status_window, COLOR_PAIR(1));
-  mvwprintw(status_window, 1, (int)(text_max_pos * 0.95f), "Timeleft: %d sec.", time_left_seen);
-  wattroff(status_window, COLOR_PAIR(1));
+  color = YELLOW;
 
  } else if (time_left_seen >= 0 && time_left_seen <= 20) {
 
-  init_pair(1, COLOR_RED, COLOR_BLACK);
-
-  wattron(status_window, COLOR_PAIR(1));
-  mvwprintw(status_window, 1, (int)(text_max_pos * 0.95f), "Timeleft: %d sec.", time_left_seen);
-  wattroff(status_window, COLOR_PAIR(1));
+  color = RED;
 
  }
+
+ wattron(status_window, COLOR_PAIR(color));
+
+ mvwprintw(status_window, 1, (int)(text_max_pos * 0.95f), "Timeleft: %d", time_left_seen);
+
+ wattroff(status_window, COLOR_PAIR(color));
+
  wrefresh(status_window);
 }
 
@@ -88,39 +95,52 @@ void update_status(const player_t *player, WINDOW *window ,const char *name, con
 }
 
 
-void update_player(const player_t *player, WINDOW *window, const int current_frame) {
+void update_player( const player_t *player, WINDOW *window, const int current_frame) {
 
-  init_pair(2, COLOR_MAGENTA, COLOR_BLACK);
+  int color = MAGENTA;
+  const char *sprite_to_draw;
 
   if (current_frame >= 0 && current_frame < FPS/15) {
-   wattron(game_window, COLOR_PAIR(2));
-   mvwprintw(game_window,(int)player->coordinates.y, (int)player->coordinates.x,"%s", player->frame_one ); // conversion from float to int
 
+    sprite_to_draw = player->frame_one;
+  
   } else if (current_frame >= FPS/15) {
-   wattron(game_window, COLOR_PAIR(2));
-   mvwprintw(game_window,(int)player->coordinates.y, (int)player->coordinates.x,"%s", player->frame_two ); // same thing here just so I don't have to write more
+
+    sprite_to_draw = player->frame_two;
   }
-  wattroff(game_window, COLOR_PAIR(2));
+
+  
+  wattron(game_window, COLOR_PAIR(color));
+
+  mvwprintw(game_window,(int)player->coordinates.y, (int)player->coordinates.x,"%s", sprite_to_draw ); // print first frame of player sprite at player coordinates
+
+  wattroff(game_window, COLOR_PAIR(color));
 }
 
 
 void update_star(const star_t *star) {
 
- init_pair(4, COLOR_YELLOW, COLOR_BLACK);
- init_pair(5, COLOR_RED, COLOR_BLACK);
+
 
    if (star->is_active) {
 
+    int color;
+
     if (star->position.y > COLS / 5 && star->position.y < COLS / 2) {
 
-     wattron(game_window, COLOR_PAIR(5));
+     color = RED;
+
+    } else {
+
+      color = YELLOW;
 
     }
 
+     wattron(game_window, COLOR_PAIR(color));
+     
+     mvwprintw(game_window, (int)star->position.y, (int)star->position.x, "%c", star->sprite);
 
-    mvwprintw(game_window, (int)star->position.y, (int)star->position.x, "%c", star->sprite);
-
-    wattroff(game_window, COLOR_PAIR(5));
+     wattroff(game_window, COLOR_PAIR(color));
 
    }
 }
@@ -157,14 +177,15 @@ void update_taxi(taxi_t *taxi, const player_t *player) {
 
  if (taxi->visible) {
 
-  init_pair(3, COLOR_CYAN, COLOR_BLACK);
+  int color = CYAN;
+  
   for (int i = 0; i < 3; i ++) {
 
-    wattron(game_window, COLOR_PAIR(3));
+    wattron(game_window, COLOR_PAIR(color));
     mvwprintw(game_window, (int)taxi->position.y, (int)taxi->position.x + i, "T");
 
   }
-  wattroff(game_window, COLOR_PAIR(3));
+  wattroff(game_window, COLOR_PAIR(color));
 
  } else {
 
@@ -243,17 +264,24 @@ int store_score(const char* player_name, int score, score_entry_t *top_scores) {
    // bubble sort
    for (int i = 0; i < score_count - 1; i++) {
     for (int j = i + 1; j < score_count; j++) {
+
      if (all_scores[j].score > all_scores[i].score) {
+
       player_data_t temp = all_scores[i];
+
       all_scores[i] = all_scores[j];
       all_scores[j] = temp;
+
      }
     }
    }
 
    for (int i = 0; i < AMM_OF_SCORES_TO_SHOW && i < score_count; i++) {
+
     strcpy(top_scores[i].player_name, all_scores[i].player_name);
+
     top_scores[i].score = all_scores[i].score;
+
    }
 
    delete[] all_scores;
@@ -262,6 +290,7 @@ int store_score(const char* player_name, int score, score_entry_t *top_scores) {
 
 
 void display_scoreboard(score_entry_t *top_scores) {
+
     mvwprintw(game_window, 3, COLS / 2 - 10, "SCOREBOARD");
 
     for (int i = 0; i < AMM_OF_SCORES_TO_SHOW; i++) {
@@ -271,10 +300,13 @@ void display_scoreboard(score_entry_t *top_scores) {
         }
 
         mvwprintw(game_window, 5 + i, COLS / 2 - 15, "%d. %s - %d", i + 1, top_scores[i].player_name, top_scores[i].score);
+
     }
 }
 
+
 void game_over(char* player_name, const int score) {
+
     nocbreak();
     noecho();
     curs_set(0);
@@ -288,13 +320,19 @@ void game_over(char* player_name, const int score) {
 
     score_entry_t top_scores[AMM_OF_SCORES_TO_SHOW] = {};
 
-    if (!store_score(player_name, score, top_scores)) {
+    
+    if (store_score(player_name, score, top_scores)) {
+
      endwin();
+
      mvwprintw(game_window, LINES/2, COLS/2, "error while storing the score");
+
     }
+
+
     display_scoreboard(top_scores);
 
-    mvwprintw(game_window, LINES - 2, COLS/2 - 10, "Press any key to exit...");
+    mvwprintw(game_window, LINES + 2, COLS/2 + 10, "Press any key to exit...");
 
     wrefresh(game_window);
 
@@ -339,14 +377,14 @@ void get_player_name(char *name) {
  mvwprintw(game_window, LINES/2, COLS/2 - 10, "ENTER NAME: ");
  wrefresh(game_window);
 
- nodelay(stdscr, FALSE); // Blocking input
- echo(); // Show what user types
- curs_set(1); // Show cursor
+ nodelay(stdscr, FALSE); // blocking input
+ echo(); // show what user types
+ curs_set(1); // show cursor
 
  wgetnstr(game_window, name, MAX_PLAYER_NAME_LENGTH);
 
- noecho(); // Hide input again
- curs_set(0); // Hide cursor
- nodelay(stdscr, TRUE); // Non-blocking input
+ noecho(); // hide input again
+ curs_set(0); // hide cursor
+ nodelay(stdscr, TRUE); // non-blocking input
 
 }

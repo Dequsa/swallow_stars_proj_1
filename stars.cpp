@@ -55,7 +55,7 @@ void stars_collect(star_t *star, player_t *player, int *stars_count) {
 
     for (int i = 0; i < MAX_AMM_STARS; i++) {
 
-        if (star[i].is_active == TRUE && check_object_player_collision(star[i].position.x, star[i].position.y, player->coordinates.x, player->coordinates.y, STAR_WIDTH, 0.0f, PLAYER_SPRITE_SIZE, PLAYER_SPRITE_Y_SIZE)) {
+        if (star[i].is_active == TRUE && check_object_player_collision(star[i].position.x, star[i].position.y, player->coordinates.x, player->coordinates.y, STAR_WIDTH, 1.0f, PLAYER_SPRITE_SIZE, PLAYER_SPRITE_Y_SIZE)) {
 
             star[i].is_active = FALSE;
             star[i].position.y = 0.0f;
