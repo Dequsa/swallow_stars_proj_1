@@ -10,6 +10,7 @@
 #define TAXI_WIDTH 3
 #define SPAWN_TAXI_X (float)(TAXI_WIDTH)
 #define SPAWN_TAXI_Y (float)(TAXI_WIDTH)
+#define TAXI_EXIT_KEY 'x'
 
 void calc_vel_taxi(taxi_t *taxi, const float target_pos_x, const float target_pos_y) {
 
@@ -67,9 +68,10 @@ void taxi_spawn(taxi_t *taxi) {
         taxi->cooldown = 0;
         taxi->dropped = FALSE;
 
-        // spawn taxi outside the screen
-        taxi->position.x = SPAWN_TAXI_X;
-        taxi->position.y = SPAWN_TAXI_Y;
+        // spawn taxi on the left corer of the screen
+        taxi->position.x = (float)TAXI_WIDTH;
+        taxi->position.y = (float)TAXI_WIDTH;
+
 }
 
 
@@ -119,7 +121,7 @@ void taxi_update(taxi_t *taxi, player_t *player, const int input_key) {
 
                                 int reached_dropoff = check_position(taxi->drop_off.x, taxi->drop_off.y, taxi->position.x, taxi->position.y, PICKUP_RADIUS);
 
-                                if (reached_dropoff || input_key == 'x') { // reached drop off point
+                                if (reached_dropoff || input_key == TAXI_EXIT_KEY) { // reached drop off point
 
                                         player->in_taxi = FALSE;
                                         player->health = player->max_health; // heal player on drop off
@@ -128,7 +130,7 @@ void taxi_update(taxi_t *taxi, player_t *player, const int input_key) {
                                         taxi->picked = FALSE;
                                         taxi->cooldown = FPS * 30; // reset cooldown 30s
 
-                                        float exit_x = taxi->position.x / 2 ? COLS + 10 : COLS - 10; // if closer to left go left if else go right
+                                        float exit_x = taxi->position.x / 2 ? COLS + 10 : - 10; // if closer to left go left if else go right
                                 
 
                                         float exit_y = taxi->position.y;

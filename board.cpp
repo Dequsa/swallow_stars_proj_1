@@ -150,6 +150,10 @@ void update_hunter(hunter_t *hunter) {
 
  if (hunter->is_active) {
 
+  int color = hunter->color;
+
+  wattron(game_window, COLOR_PAIR(color));
+
   for (int i = 0; i < hunter->height; i++) {
 
    for (int j = 0; j < hunter->width; j++) {
@@ -160,7 +164,9 @@ void update_hunter(hunter_t *hunter) {
     mvwprintw(game_window, h_y, h_x, "%c", 'H');
 
     if (j == hunter->width / 2 && hunter->displayed == FALSE) {
+      
      hunter->displayed = TRUE;
+
      const int display_bounces = hunter->bounces_left - hunter->bounces_done;
 
      mvwprintw(game_window, h_y - hunter->height, h_x, "%d", display_bounces);
@@ -168,7 +174,9 @@ void update_hunter(hunter_t *hunter) {
     }
    }
   }
+
   hunter->displayed = FALSE;
+  wattroff(game_window, COLOR_PAIR(color));
  }
 }
 
@@ -369,6 +377,7 @@ void show_lvl_complete(const int current_lvl) {
  nodelay(stdscr, TRUE);
 
 }
+
 
 void get_player_name(char *name) {
 

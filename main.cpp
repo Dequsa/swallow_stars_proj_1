@@ -10,6 +10,7 @@
 #define CONFIG_ERR (-1)
 #define ERR_NPTR (-2)
 #define LEVEL_AMM 5
+#define TAXI_KEY 'x'
 
 
 int check_null_pointer(const FILE* fptr) {
@@ -280,8 +281,11 @@ void stars_all(int *stars_count, player_t *player, star_t *stars ){
 void hunters_all(hunter_t *hunters, player_t *player, const type_t *hunter_types, const int cache_time_left, const int i, const int time_left ) {
 
     const int total_level_frames = cache_time_left * FPS;
+
     const int frames_passed = total_level_frames - time_left;
+
     const int difficulty_adder = (frames_passed * 9) / total_level_frames;
+
     const int eva_time = 1 + difficulty_adder;
 
     hunter_spawn(hunters, player, hunter_types, eva_time);
@@ -292,11 +296,12 @@ void hunters_all(hunter_t *hunters, player_t *player, const type_t *hunter_types
 
 void taxi_all(player_t *player, taxi_t *taxi, const int input_key) {
 
-    if (player->health <= player->max_health / 2 && !player->has_called_taxi && taxi->cooldown <= 0) {
+    if (input_key == TAXI_KEY && !player->has_called_taxi && taxi->cooldown <= 0) {
                 
         taxi->dropped = FALSE;
         taxi->found_drop = FALSE;
         taxi->is_active = TRUE;
+
         player->has_called_taxi = TRUE;
             
     }
@@ -335,6 +340,7 @@ void save_score(int *player_score, int *collected_stars, int *time_left) {
 
     int points_from_stars = (*collected_stars) * 100;
     int seconds_left = (*time_left) / FPS;
+
     int points_from_time = seconds_left * 10;
 
     *player_score += (points_from_stars + points_from_time);

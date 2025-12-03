@@ -133,7 +133,7 @@ void move_player(player_t *player, int *input_key) {
             break;
         }
             case 'x': { // debug button
-
+                
             break;
         }
         default: {

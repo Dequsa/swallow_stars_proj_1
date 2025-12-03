@@ -135,9 +135,36 @@ void hunter_move(hunter_t *hunter, const player_t *player) {
 
 
 void hunter_init(hunter_t *hunter, const type_t *type) {
+
+    int total_weight = 0;
+    
+    for (int i = 0; i < HUNTER_TYPE_AMM; i++) {
+
+        total_weight += type[i].spawn_chance;
+
+    }
+
     for (int i = 0; i < MAX_AMM_HUNTERS; i++) {
 
-        hunter[i].hunter_type = rand() % HUNTER_TYPE_AMM;
+        int rand_n = rand() % total_weight;
+        
+        int current_weight = 0;
+        int current_id = 0;
+        
+        for (int j = 0; j < HUNTER_TYPE_AMM; j++) {
+            
+            current_weight += type[j].spawn_chance;
+            
+            if (rand_n < current_weight) {
+                
+                current_id = j;
+
+                break;
+
+            }
+        }
+
+        hunter[i].hunter_type = current_id;
 
         const unsigned int h_type = hunter[i].hunter_type;
 
@@ -155,12 +182,54 @@ void hunter_init(hunter_t *hunter, const type_t *type) {
 }
 
 
+int hunter_check_spawn(const hunter_t *hunter, player_t *player) {
+
+    if (player->current_amm_of_hunters_on_board < player->max_hunters_on_board && hunter->is_active == FALSE && hunter->cooldown <= 0)
+        return 1;
+
+    return 0;
+}
+
+
+void hunter_choose_spawn_point(hunter_t *hunter) {
+
+    const int X_MARGIN = 2;
+    const int Y_MARGIN = 2;
+
+    // maximum spawn ranges
+    int max_spawn_x = PLAYABLE_AREA_SIZE_X - hunter->width - 2 * X_MARGIN;
+    int max_spawn_y = PLAYABLE_AREA_SIZE_Y - hunter->height - 2 * Y_MARGIN;
+
+    switch (rand() % 4) {
+
+        case 0: // TOP
+            hunter->hunter_pos.x = X_MARGIN + (float)(rand() % max_spawn_x);
+            hunter->hunter_pos.y = 1.0f; // top row
+            break;
+
+        case 1: // LEFT
+            hunter->hunter_pos.x = 1.0f; // left edge
+            hunter->hunter_pos.y = Y_MARGIN + (float)(rand() % max_spawn_y);
+            break;
+
+        case 2: // BOTTOM
+            hunter->hunter_pos.x = X_MARGIN + (float)(rand() % max_spawn_x);
+            hunter->hunter_pos.y = PLAYABLE_AREA_SIZE_Y - hunter->height; // bottom
+            break;
+
+        case 3: // RIGHT
+            hunter->hunter_pos.x = PLAYABLE_AREA_SIZE_X - hunter->width; // right edge
+            hunter->hunter_pos.y = Y_MARGIN + (float)(rand() % max_spawn_y);
+            break;
+    }
+}
+
+
 void hunter_spawn(hunter_t *hunter, player_t *player, const type_t *type, const int eva_time) {
 
         for (int i = 0; i < MAX_AMM_HUNTERS; i++) {
 
-            if (rand() % 100 <= hunter[i].spawn_chance && player->current_amm_of_hunters_on_board < player->max_hunters_on_board
-                && hunter[i].is_active == FALSE && hunter[i].cooldown <= 0) {
+            if (hunter_check_spawn(&hunter[i], player)) {
 
                 const unsigned int h_type = hunter[i].hunter_type;
 
@@ -172,41 +241,10 @@ void hunter_spawn(hunter_t *hunter, player_t *player, const type_t *type, const 
                 hunter[i].stop_timer = 0;
                 hunter[i].dash_cooldown = FPS * 2;
 
-                const int X_MARGIN = 2;
-                const int Y_MARGIN = 2;
-
-                // maximum spawn ranges
-                int max_spawn_x = PLAYABLE_AREA_SIZE_X - hunter[i].width - 2 * X_MARGIN;
-                int max_spawn_y = PLAYABLE_AREA_SIZE_Y - hunter[i].height - 2 * Y_MARGIN;
-
-                switch (rand() % 4) {
-
-                    case 0: // TOP
-                        hunter[i].hunter_pos.x = X_MARGIN + (float)(rand() % max_spawn_x);
-                        hunter[i].hunter_pos.y = 1.0f; // top row
-                        break;
-
-                    case 1: // LEFT
-                        hunter[i].hunter_pos.x = 1.0f; // left edge
-                        hunter[i].hunter_pos.y = Y_MARGIN + (float)(rand() % max_spawn_y);
-                        break;
-
-                    case 2: // BOTTOM
-                        hunter[i].hunter_pos.x = X_MARGIN + (float)(rand() % max_spawn_x);
-                        hunter[i].hunter_pos.y = PLAYABLE_AREA_SIZE_Y - hunter[i].height; // bottom
-                        break;
-
-                    case 3: // RIGHT
-                        hunter[i].hunter_pos.x = PLAYABLE_AREA_SIZE_X - hunter[i].width; // right edge
-                        hunter[i].hunter_pos.y = Y_MARGIN + (float)(rand() % max_spawn_y);
-                        break;
-                }
-
-
-
+                hunter_choose_spawn_point(&hunter[i]);
 
                 // vector calculation
-                    calculate_vel_vec(&hunter[i], player, eva_time);
+                calculate_vel_vec(&hunter[i], player, eva_time);
                 // -----------------
 
 
