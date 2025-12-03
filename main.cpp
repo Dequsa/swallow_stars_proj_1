@@ -289,6 +289,29 @@ void hunters_all(hunter_t *hunters, player_t *player, const type_t *hunter_types
 }
 
 
+
+void taxi_all(player_t *player, taxi_t *taxi, const int input_key) {
+
+    if (player->health <= player->max_health / 2 && !player->has_called_taxi && taxi->cooldown <= 0) {
+                
+        taxi->dropped = FALSE;
+        taxi->found_drop = FALSE;
+        taxi->is_active = TRUE;
+        player->has_called_taxi = TRUE;
+            
+    }
+            
+    if (taxi->cooldown > 0) {
+        taxi->cooldown--;
+    }
+
+    if(taxi->is_active) {
+        taxi_update(taxi, player, input_key);
+    }
+    
+}
+
+
 int check_over(const int time_left, const int health, int* game_over, const int collected_stars, const unsigned int star_quota) {
 
     if (time_left <= 0 || health <= 0) {
@@ -340,30 +363,15 @@ void main_game_loop(board_t *board, board_t *boards_cache, player_t *player, hun
 
             move_player(player, &input_key);
 
-            if (player->health <= player->max_health / 2 && !player->has_called_taxi && taxi->cooldown <= 0) {
-                
-                taxi->dropped = FALSE;
-                taxi->found_drop = FALSE;
-                taxi->is_active = TRUE;
-                player->has_called_taxi = TRUE;
-            
-            }
-            
-            if (taxi->cooldown > 0) {
-                taxi->cooldown--;
-            }
-
-            if(taxi->is_active) {
-                taxi_update(taxi, player, input_key);
-            }
+            taxi_all(player, taxi, input_key);
 
             stars_all(&stars_count, player, stars);
-            
-            board->time_left = calculate_time_left_frames(board);
 
             hunters_all(hunters, player, hunter_types,boards_cache[i].time_left, i, board->time_left);
 
             update_screen(player, stars, hunters, player_name, board->time_left, i, taxi);
+
+            board->time_left = calculate_time_left_frames(board);
 
             nanosleep(&req, &rem);
 
