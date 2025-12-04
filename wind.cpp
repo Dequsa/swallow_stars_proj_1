@@ -1,8 +1,8 @@
 #include "board.h"
 #define SCREEN_RATIO (0.56f)
 #define WIND_CHANGE_INTERVAL (1 * FPS) // 2 sec interval betwen gusts
-#define WIND_SMOOTHING (0.15f)     // smoothing of the wind
-#define MAX_WIND_FORCE (1.5f)      // max force of the wind gust
+#define WIND_SMOOTHING (0.05f)     // smoothing of the wind
+#define MAX_WIND_FORCE (1.0f)      // max force of the wind gust
 
 void update_wind(wind_t *wind) {
     
@@ -23,7 +23,7 @@ void update_wind(wind_t *wind) {
 }
 
 
-void apply_wind(const wind_t *wind, player_t *player, hunter_t *hunters, taxi_t *taxi) {
+void apply_wind(const wind_t *wind, player_t *player, hunter_t *hunters) {
     
     // apply wind to player only to direction where the player is going for the ease of collecting stars
     if (player->current_heading == UP || player->current_heading == DOWN) {

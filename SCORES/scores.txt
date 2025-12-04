@@ -53,3 +53,6 @@ l 3660
 guest 400
 guest 900
 guest 100
+guest 220
+guest 8180
+as 270

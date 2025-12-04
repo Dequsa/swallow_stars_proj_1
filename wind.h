@@ -11,6 +11,6 @@ typedef struct {
 
 void update_wind(wind_t *wind);
 
-void apply_wind(const wind_t *wind, player_t *player, hunter_t *hunters, taxi_t *taxi);
+void apply_wind(const wind_t *wind, player_t *player, hunter_t *hunters);
 
 #endif //SWALLOW_GAME_PROJ_1_WIND_H

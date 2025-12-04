@@ -1,8 +1,7 @@
 #include <iostream>
 #include "board.h" // connects all libs together
 #include <cstring>
-#include <time.h>
-#include <sys/time.h>
+#include <sys/time.h> // normal time.h is not working must look for one that is in sys category
 #define CFG_S "../CONFIGS/stats.cfg"
 #define CFG_H "../CONFIGS/hunters.cfg"
 #define CFG_B "../CONFIGS/board.cfg"
@@ -437,9 +436,8 @@ void main_game_loop(board_t *board, board_t *boards_cache, player_t *player, hun
             int input_key = -1;
 
             update_wind(wind);
-            apply_wind(wind, player, hunters, taxi);
+            apply_wind(wind, player, hunters);
 
-           // wind_gust(player, hunters, taxi);
 
             move_player(player, &input_key);
 
