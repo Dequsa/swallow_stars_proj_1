@@ -18,6 +18,7 @@ add_executable(swallow_game_proj_1 main.cpp
         hunters.cpp
         taxi.h
         taxi.cpp
+        boss.cpp
 )
 
 target_link_libraries(swallow_game_proj_1 ${CURSES_LIBRARIES})

@@ -11,6 +11,9 @@
 #define ERR_NPTR (-2)
 #define LEVEL_AMM 5
 #define TAXI_KEY 'x'
+#define OCC_EMPTY -1
+#define OCC_PLAYER -2
+#define OCC_STAR -3
 
 int check_string_validity(const char *str) {
     if (strlen(str) == 0 || isspace(str[0])) {
@@ -426,6 +429,24 @@ void main_game_loop(board_t *board, board_t *boards_cache, player_t *player, hun
 }
 
 
+void allocate_mem_map(int **&map) { // reference to * to * adress of the board.occupancy_map
+    map = new int *[LINES];
+
+    for (int i = 0; i < LINES; i++) {
+        map[i] = new int[COLS];
+    }
+}
+
+
+void free_mem_map(int **map) { // no need to reference here we just free the mem
+    for (int i = 0 ; i < LINES; i++) {
+        delete [] map[i];
+    }
+    delete [] map;
+}
+
+
+
 int main() {
 
     star_t stars[MAX_AMM_STARS];
@@ -436,6 +457,9 @@ int main() {
     player_t player;
     taxi_t taxi;
     FILE *fptr = nullptr;
+
+    allocate_mem_map(board.occupancy_map);
+
 
     seed_set();
 
@@ -455,5 +479,6 @@ int main() {
     main_game_loop(&board, boards_cache, &player, hunters, hunter_types, stars, player_name, &taxi);
 
 
+    free_mem_map(board.occupancy_map);
     return 0;
 }

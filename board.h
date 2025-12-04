@@ -34,6 +34,7 @@ extern WINDOW *status_window;
 extern WINDOW *game_over_window;
 
 typedef struct {
+    int **occupancy_map;
     unsigned long current_seed;
     int is_over;
     unsigned int star_quota;
