@@ -18,9 +18,13 @@ void stars_init(star_t *star) {
 
 
 void stars_spawn (star_t *star, int *stars_count) {
+
     if (rand() % 10 <= 2) {
+        
         for (int i = 0; i < MAX_AMM_STARS; i++) {
+
             if (star[i].is_active == FALSE && rand() % 10 <= 2) {
+
                 star[i].is_active = TRUE;
                 star[i].position.x = rand() % (COLS - 2) + 1; // -2 is borders
                 star[i].position.y = 1.0f;
@@ -34,7 +38,9 @@ void stars_spawn (star_t *star, int *stars_count) {
 
 
 void stars_update(star_t *star, int *stars_count) {
+    
     for (int i = 0; i < MAX_AMM_STARS; i++) {
+
         if (star[i].is_active == TRUE) {
 
             star[i].position.y += star[i].velocity * 0.1f;

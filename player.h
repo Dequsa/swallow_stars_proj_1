@@ -9,7 +9,7 @@
 #define MAX_LINE_SIZE 32
 #define STATUS_LINE_SIZE 3
 #define PLAYER_SPRITE_Y_SIZE (1.0f)
-#endif //SWALLOW_GAME_PROJ_1_PLAYER_H
+
 
 typedef struct {
     int color;
@@ -54,3 +54,5 @@ void init_player(player_t *player);
 void move_player(player_t *player, int *input_key);
 
 int choose_color_player(int health, int max_health);
+
+#endif //SWALLOW_GAME_PROJ_1_PLAYER_H

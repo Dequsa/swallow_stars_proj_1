@@ -13,10 +13,10 @@
 #include "stars.h"
 #include "hunters.h"
 #include "taxi.h"
-#include "boss.h"
+#include "wind.h"
 
 #define STATUS_LINE_SIZE 3 // size of status bar in lines
-#define FPS 60 // number of frames for bird animations
+#define FPS 60 // number of frames
 #define MAX_PLAYER_NAME_LENGTH 256
 #define GREEN 1
 #define YELLOW 2
@@ -26,7 +26,7 @@
 #define BLUE 6
 #define WHITE 7
 
-#endif //SWALLOW_GAME_PROJ_1_BOARD_H
+
 
 
 extern WINDOW *game_window;
@@ -69,3 +69,5 @@ void show_lvl_complete(const int current_lvl);
 void get_player_name(char *name);
 
 void show_win_screen();
+
+#endif //SWALLOW_GAME_PROJ_1_BOARD_H

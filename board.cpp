@@ -158,8 +158,8 @@ void update_hunter(hunter_t *hunter) {
 
    for (int j = 0; j < hunter->width; j++) {
 
-    const int h_x = (int)hunter->hunter_pos.x + i;
-    const int h_y = (int)hunter->hunter_pos.y + j;
+    const int h_x = (int)hunter->hunter_pos.x + j;
+    const int h_y = (int)hunter->hunter_pos.y + i;
 
     mvwprintw(game_window, h_y, h_x, "%c", 'H');
 
@@ -169,7 +169,7 @@ void update_hunter(hunter_t *hunter) {
 
      const int display_bounces = hunter->bounces_left - hunter->bounces_done;
 
-     mvwprintw(game_window, h_y - hunter->height, h_x, "%d", display_bounces);
+     mvwprintw(game_window, h_y - 1.0f, h_x, "%d", display_bounces);
 
     }
    }

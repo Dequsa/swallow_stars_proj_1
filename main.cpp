@@ -14,6 +14,7 @@
 #define OCC_EMPTY -1
 #define OCC_PLAYER -2
 #define OCC_STAR -3
+#define DIFF_MULTIPLIER_MAX 3
 
 int check_string_validity(const char *str) {
     if (strlen(str) == 0 || isspace(str[0])) {
@@ -253,6 +254,41 @@ int calculate_time_left_frames(const board_t *board) {
 }
 
 
+void update_occupancy_map(board_t *board, const hunter_t *hunters) {
+    
+    for (int y = 0; y < LINES; y++) {
+        for (int x = 0; x < COLS; x++) {
+
+            board->occupancy_map[y][x] = OCC_EMPTY;
+
+        }
+    }
+
+    for (int i = 0; i < MAX_AMM_HUNTERS; i++) {
+
+        if (hunters[i].is_active == TRUE) {
+            
+            int start_x = (int)hunters[i].hunter_pos.x;
+            int start_y = (int)hunters[i].hunter_pos.y;
+            
+            for (int h = 0; h < hunters[i].height; h++) {
+                for (int w = 0; w < hunters[i].width; w++) {
+                    
+                    int y = start_y + h;
+                    int x = start_x + w;
+
+                    if (y >= 0 && y < LINES && x >= 0 && x < COLS) {
+
+                        board->occupancy_map[y][x] = i;  // store hunter index on the map
+
+                    }
+                }
+            }
+        }
+    }
+}
+
+
 void level_complete(board_t *board, const board_t *boards_cache ,player_t *player, const int current_lvl, hunter_t *hunters, const type_t *types_hunter, taxi_t *taxi) {
 
     board->time_limit_seconds = boards_cache[current_lvl].time_left;
@@ -297,24 +333,33 @@ void stars_all(int *stars_count, player_t *player, star_t *stars ){
     if (*stars_count == MAX_AMM_STARS) *stars_count = 0;
 
     stars_update(stars, stars_count);
-    stars_collect(stars, player , stars_count);
 }
 
 
-void hunters_all(hunter_t *hunters, player_t *player, const type_t *hunter_types, const int board_cache_time_left, const int i, const int time_left ) {
+void hunters_movement_all(hunter_t *hunters, player_t *player, const type_t *hunter_types, const int board_cache_time_left, const int i, const int time_left, int **map ) {
 
     const int total_level_frames = board_cache_time_left * FPS;
 
     const int frames_passed = total_level_frames - time_left; // how many frames have passed since level started
 
-    const int difficulty_adder = frames_passed / total_level_frames; // this will be 0 at start, 1 at half time, 2 at end
+    const int difficulty_adder = (DIFF_MULTIPLIER_MAX * frames_passed) / total_level_frames; // goes from 0 to DIFF_MULTIPLIER_MAX
 
     const int eva_time = 1 + difficulty_adder; // evaluation over time increases as level progresses from 1 to 3
 
+
+
     hunter_spawn(hunters, player, hunter_types, eva_time);
-    hunter_update(hunters, player, eva_time);
+    hunter_update(hunters, player, eva_time, map);
 }
 
+
+void collision_all(board_t *board, hunter_t *hunters, player_t *player, star_t *stars, int *stars_count) {
+    
+    update_occupancy_map(board, hunters); // handels the occupation amp
+
+    stars_collect(stars, player , stars_count);
+    hunter_dmg(hunters , player, board->occupancy_map);
+}
 
 
 void taxi_all(player_t *player, taxi_t *taxi, const int input_key) {
@@ -370,7 +415,7 @@ void save_score(int *player_score, const int *collected_stars, const int *time_l
 }
 
 
-void main_game_loop(board_t *board, board_t *boards_cache, player_t *player, hunter_t *hunters, type_t *hunter_types, star_t *stars, char* player_name, taxi_t *taxi) {
+void main_game_loop(board_t *board, board_t *boards_cache, player_t *player, hunter_t *hunters, type_t *hunter_types, star_t *stars, char* player_name, taxi_t *taxi, wind_t *wind) {
 
     timespec req{};
     timespec rem{};
@@ -391,17 +436,22 @@ void main_game_loop(board_t *board, board_t *boards_cache, player_t *player, hun
 
             int input_key = -1;
 
+            update_wind(wind);
+            apply_wind(wind, player, hunters, taxi);
+
+           // wind_gust(player, hunters, taxi);
+
             move_player(player, &input_key);
 
             taxi_all(player, taxi, input_key);
 
             stars_all(&stars_count, player, stars);
 
-            hunters_all(hunters, player, hunter_types, boards_cache[current_lvl].time_left, current_lvl, board->time_left);
+            hunters_movement_all(hunters, player, hunter_types, boards_cache[current_lvl].time_left, current_lvl, board->time_left, board->occupancy_map);
+
+            collision_all(board, hunters, player, stars, &stars_count);
 
             update_screen(player, stars, hunters, player_name, board->time_left, current_lvl, taxi);
-
-            wind_gust(player, hunters, taxi);
 
             board->time_left = calculate_time_left_frames(board);
 
@@ -409,16 +459,19 @@ void main_game_loop(board_t *board, board_t *boards_cache, player_t *player, hun
 
 
             if (check_over(board->time_left, player->health, &board->is_over, player->stars_collected, board->star_quota, input_key)) {
-                // save score
+            
                 save_score(&player->score, &player->stars_collected, &board->time_left);
                 break;
             }
 
         }
 
-        if (current_lvl == LEVEL_AMM - 1) {
-        show_win_screen();
+        if (current_lvl == LEVEL_AMM - 1 && !board->is_over) {
+            
+            show_win_screen();
+        
         }
+        
         if (board->is_over) {
             break;
         }
@@ -457,15 +510,14 @@ int main() {
     player_t player;
     taxi_t taxi;
     FILE *fptr = nullptr;
-
-    allocate_mem_map(board.occupancy_map);
-
+    wind_t wind = {};
 
     seed_set();
 
     load_configs(fptr, &player, hunter_types, boards_cache);
 
     init_board(&board);
+    allocate_mem_map(board.occupancy_map);
     init_player(&player);
     stars_init(stars);
     hunter_init(hunters, hunter_types);
@@ -476,7 +528,7 @@ int main() {
     get_player_name(player_name);
     check_player_name(player_name);
 
-    main_game_loop(&board, boards_cache, &player, hunters, hunter_types, stars, player_name, &taxi);
+    main_game_loop(&board, boards_cache, &player, hunters, hunter_types, stars, player_name, &taxi, &wind);
 
 
     free_mem_map(board.occupancy_map);

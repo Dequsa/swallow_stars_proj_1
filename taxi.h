@@ -4,7 +4,7 @@
 
 #ifndef SWALLOW_GAME_PROJ_1_TAXI_H
 #define SWALLOW_GAME_PROJ_1_TAXI_H
-#endif //SWALLOW_GAME_PROJ_1_TAXI_H
+
 
 
 typedef struct {
@@ -28,3 +28,5 @@ void taxi_spawn(taxi_t *taxi);
 void taxi_spawn(taxi_t *taxi);
 
 void taxi_update(taxi_t *taxi, player_t *player, const int input_key);
+
+#endif //SWALLOW_GAME_PROJ_1_TAXI_H

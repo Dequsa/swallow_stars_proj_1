@@ -3,7 +3,7 @@
 //
 #include <iostream>
 #include "board.h"
-#define PLAYER_SPRITE_WIDTH 5
+#define PLAYER_SPRITE_WIDTH_X 5
 #define LOW_HEALTH 0.3f
 #define MEDIUM_HEALTH 0.7f
 #define BASE_TILE_CHANGE 0.3f
@@ -20,8 +20,8 @@ void init_player(player_t *player) {
     player->in_taxi = FALSE;
 
 
-    const char temp_sprite_1[] = "\\-V-/\0";
-    const char temp_sprite_2[] = "/-O-\\\0";
+    const char temp_sprite_1[] = "\\\\V//\0";
+    const char temp_sprite_2[] = "//O\\\\\0";
 
     int i = 0;
     while (temp_sprite_1[i] != '\0') {
@@ -57,7 +57,7 @@ int choose_color_player(int health, int max_health) {
 void out_of_bounds_check_player(float *new_x,  float *new_y, int *heading) {
 
     const float min_x = 1.0f;
-    const float max_x = (float)COLS - PLAYER_SPRITE_WIDTH - 1;
+    const float max_x = (float)COLS - PLAYER_SPRITE_WIDTH_X - 1;
     const float min_y = 1.0f;
     const float max_y = (float)LINES - STATUS_LINE_SIZE - 2.0f;
 
@@ -96,7 +96,7 @@ void calculate_vel_vec(player_t *player) {
 
     const float speed = (float)player->current_speed * BASE_TILE_CHANGE;
 
-    player->vel_x = dir_x * speed; // speed evaluated by time and level
+    player->vel_x = dir_x * speed;
     player->vel_y = dir_y * speed * 0.56f; // adjust for terminal character aspect ratio
 
 }
@@ -111,36 +111,8 @@ void player_move(player_t *player) {
 }
 
 void update_player_position(player_t *player) {
-    if (!player->in_taxi)
-    {
-    // int *heading = &player->current_heading;
-    // const float move = (float)player->current_speed * 0.3f;
-    // float new_y = player->coordinates.y;
-    // float new_x = player->coordinates.x;
-
-    // switch (player->current_heading) {
-    //     case UP: {
-    //         calculate_vel_vec(player, player->current_heading);
-    //         // new_y -= move * 0.56f;
-    //         break;
-    //     }
-    //     case DOWN: {
-    //         calculate_vel_vec(player, player->current_heading);
-    //         // new_y += move * 0.56f;
-    //         break;
-    //     }
-    //     case LEFT: {
-    //         calculate_vel_vec(player, player->current_heading);
-    //         // new_x -= move;
-    //         break;
-    //     }
-    //     case RIGHT: {
-    //         calculate_vel_vec(player, player->current_heading);
-    //         // new_x += move;
-    //         break;
-    //     }
-    //     default: { break; }
-    // }
+    
+    if (!player->in_taxi) {
     
     calculate_vel_vec(player);
     
@@ -148,8 +120,6 @@ void update_player_position(player_t *player) {
 
     out_of_bounds_check_player(&player->coordinates.x, &player->coordinates.y, &player->current_heading);
 
-    // player->coordinates.x = new_x;
-    // player->coordinates.y = new_y;
     }
 
 }
