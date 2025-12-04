@@ -62,7 +62,7 @@ void hunter_update(hunter_t *hunter, player_t *player, const int eva_time);
 
 void hunter_dmg(hunter_t *hunter, player_t *player);
 
-void hunter_move(const hunter_t *hunter, const player_t *player);
+void hunter_move(const hunter_t *hunter);
 
 void calculate_vel_vec(hunter_t *hunter, const player_t *player, const int eva_time);
 

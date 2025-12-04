@@ -184,6 +184,46 @@ int load_config_board(FILE* fptr, board_t *boards_cache) {
 }
 
 
+int load_configs(FILE *fptr, player_t *player, type_t *hunter_types, board_t *boards_cache ) {
+
+    int config_err = load_config_player(fptr, player);
+
+    if (config_err != ERR_S) {
+        printf("Failed to load config player\n");
+        return 1;
+    }
+
+    config_err = load_config_hunter(fptr, hunter_types);
+
+    if (config_err != ERR_S ) {
+        printf("Failed to load config hunters\n");
+        return 1;
+    }
+
+    config_err = load_config_board(fptr, boards_cache);
+
+    if (config_err != ERR_S) {
+        printf("Failed to load config board\n");
+        return 1;
+    }
+
+
+    return 0;
+}
+
+
+void hunter_delete_all(hunter_t *hunters, player_t *player) {
+
+    for (int i = 0; i < MAX_AMM_HUNTERS; i++) {
+        if (hunters[i].is_active == TRUE) {
+            hunters[i].is_active = FALSE;
+            hunters[i].bounces_done = 0;
+            player->current_amm_of_hunters_on_board--;
+        }
+    }
+}
+
+
 double get_current_time_seconds() {
 
     timeval current_time{};
@@ -207,18 +247,6 @@ int calculate_time_left_frames(const board_t *board) {
 
     return (int)(time_remaining * FPS);
 
-}
-
-
-void hunter_delete_all(hunter_t *hunters, player_t *player) {
-
-    for (int i = 0; i < MAX_AMM_HUNTERS; i++) {
-        if (hunters[i].is_active == TRUE) {
-            hunters[i].is_active = FALSE;
-            hunters[i].bounces_done = 0;
-            player->current_amm_of_hunters_on_board--;
-        }
-    }
 }
 
 
@@ -253,34 +281,6 @@ void level_complete(board_t *board, const board_t *boards_cache ,player_t *playe
 }
 
 
-int load_configs(FILE *fptr, player_t *player, type_t *hunter_types, board_t *boards_cache ) {
-
-    int config_err = load_config_player(fptr, player);
-
-    if (config_err != ERR_S) {
-        printf("Failed to load config player\n");
-        return 1;
-    }
-
-    config_err = load_config_hunter(fptr, hunter_types);
-
-    if (config_err != ERR_S ) {
-        printf("Failed to load config hunters\n");
-        return 1;
-    }
-
-    config_err = load_config_board(fptr, boards_cache);
-
-    if (config_err != ERR_S) {
-        printf("Failed to load config board\n");
-        return 1;
-    }
-
-
-    return 0;
-}
-
-
 void seed_set() {
     const unsigned long seed = time(nullptr);
     srand(seed);
@@ -298,15 +298,15 @@ void stars_all(int *stars_count, player_t *player, star_t *stars ){
 }
 
 
-void hunters_all(hunter_t *hunters, player_t *player, const type_t *hunter_types, const int cache_time_left, const int i, const int time_left ) {
+void hunters_all(hunter_t *hunters, player_t *player, const type_t *hunter_types, const int board_cache_time_left, const int i, const int time_left ) {
 
-    const int total_level_frames = cache_time_left * FPS;
+    const int total_level_frames = board_cache_time_left * FPS;
 
-    const int frames_passed = total_level_frames - time_left;
+    const int frames_passed = total_level_frames - time_left; // how many frames have passed since level started
 
-    const int difficulty_adder = frames_passed / total_level_frames;
+    const int difficulty_adder = frames_passed / total_level_frames; // this will be 0 at start, 1 at half time, 2 at end
 
-    const int eva_time = 1 + difficulty_adder;
+    const int eva_time = 1 + difficulty_adder; // evaluation over time increases as level progresses from 1 to 3
 
     hunter_spawn(hunters, player, hunter_types, eva_time);
     hunter_update(hunters, player, eva_time);
@@ -375,12 +375,13 @@ void main_game_loop(board_t *board, board_t *boards_cache, player_t *player, hun
     req.tv_sec = 0;
 
     int stars_count = 0;
+    int current_lvl;
 
     player->score = 0;
 
-    for (int i = 0 ; i < LEVEL_AMM; i++) {
+    for (current_lvl = 0 ; current_lvl < LEVEL_AMM; current_lvl++) {
 
-        level_complete(board, boards_cache, player, i, hunters, hunter_types, taxi);
+        level_complete(board, boards_cache, player, current_lvl, hunters, hunter_types, taxi);
         taxi_spawn(taxi);
 
         while (!board->is_over) {
@@ -393,9 +394,11 @@ void main_game_loop(board_t *board, board_t *boards_cache, player_t *player, hun
 
             stars_all(&stars_count, player, stars);
 
-            hunters_all(hunters, player, hunter_types,boards_cache[i].time_left, i, board->time_left);
+            hunters_all(hunters, player, hunter_types, boards_cache[current_lvl].time_left, current_lvl, board->time_left);
 
-            update_screen(player, stars, hunters, player_name, board->time_left, i, taxi);
+            update_screen(player, stars, hunters, player_name, board->time_left, current_lvl, taxi);
+
+            wind_gust(player, hunters, taxi);
 
             board->time_left = calculate_time_left_frames(board);
 
@@ -410,14 +413,13 @@ void main_game_loop(board_t *board, board_t *boards_cache, player_t *player, hun
 
         }
 
+        if (current_lvl == LEVEL_AMM - 1) {
+        show_win_screen();
+        }
         if (board->is_over) {
-            if (i >= LEVEL_AMM - 1) {
-                show_win_screen();
-            }
             break;
         }
     }
-
 
     game_over(player_name, player->score);
 

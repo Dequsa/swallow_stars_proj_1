@@ -126,7 +126,7 @@ void hunter_bounce(hunter_t *hunter) {
 }
 
 
-void hunter_move(hunter_t *hunter, const player_t *player) {
+void hunter_move(hunter_t *hunter) {
 
 
     hunter->hunter_pos.x += hunter->vel.x;
@@ -262,7 +262,7 @@ void hunter_update(hunter_t *hunter, player_t *player, const int eva_time) {
 
         if (hunter[i].is_active == TRUE) {
 
-            hunter_move(&hunter[i], player);
+            hunter_move(&hunter[i]);
             hunter_bounce(&hunter[i]);
             hunter_dmg(hunter, player);
 

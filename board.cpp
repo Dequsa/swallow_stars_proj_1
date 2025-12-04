@@ -100,7 +100,7 @@ void update_player( const player_t *player, WINDOW *window, const int current_fr
 
   color = choose_color_player(player->health, player->max_health);
 
-  if (current_frame >= 0 && current_frame < FPS / 15) {
+  if (current_frame >= 0 && current_frame < FPS / 6) {
 
     sprite_to_draw = player->frame_one;
   
@@ -214,7 +214,7 @@ void update_screen(const player_t *player, const star_t *stars, hunter_t *hunter
 
   static int current_frame = 0;
 
-  if (current_frame == FPS/6) {
+  if (current_frame == FPS/3) {
    current_frame = 0;
   }
 
@@ -353,32 +353,6 @@ void game_over(char* player_name, const int score) {
 }
 
 
-void show_lvl_complete(const int current_lvl) {
-
- werase(game_window);
-
- mvwprintw(game_window, LINES / 2, COLS / 2, "%d COMPLETED", current_lvl);
- mvwprintw(game_window, LINES / 2 + 1, COLS / 2, "PRESS ANY BUTTON TO CONTINUE");
-
- wrefresh(game_window);
-
- nodelay(stdscr, FALSE);
-
- timespec req{};
- timespec rem{};
- req.tv_nsec = 0;
- req.tv_sec = 1; // 3s sleep so player doesn't instantly turn  off-screen
-
- nanosleep(&req, &rem);
-
- while (getch() == -1) {
-
- }
- nodelay(stdscr, TRUE);
-
-}
-
-
 void get_player_name(char *name) {
 
 
@@ -397,6 +371,32 @@ void get_player_name(char *name) {
  nodelay(stdscr, TRUE); // non-blocking input
 
 }
+
+
+void show_lvl_complete(const int current_lvl) {
+
+ werase(game_window);
+
+ mvwprintw(game_window, LINES / 2, COLS / 2, "%d COMPLETED", current_lvl);
+ mvwprintw(game_window, LINES / 2 + 1, COLS / 2, "PRESS ANY BUTTON TO CONTINUE");
+
+ wrefresh(game_window);
+
+ timespec req{};
+ timespec rem{};
+ req.tv_nsec = 0;
+ req.tv_sec = 1; // 3s sleep so player doesn't instantly turn  off-screen
+
+ nanosleep(&req, &rem);
+
+ nodelay(stdscr, FALSE);
+
+ getch();
+
+ nodelay(stdscr, TRUE);
+
+}
+
 
 void show_win_screen() {
 
@@ -417,9 +417,8 @@ void show_win_screen() {
 
  nanosleep(&req, &rem);
 
- while (getch() == -1) {
+ getch();
 
- }
  nodelay(stdscr, TRUE);
 
 }

@@ -28,6 +28,8 @@ typedef struct {
     int current_amm_of_hunters_on_board;
     int max_hunters_on_board;
     int has_called_taxi;
+    float vel_x;
+    float vel_y;
     struct coordinates {
         float x;
         float y;

@@ -6,6 +6,7 @@
 #define PLAYER_SPRITE_WIDTH 5
 #define LOW_HEALTH 0.3f
 #define MEDIUM_HEALTH 0.7f
+#define BASE_TILE_CHANGE 0.3f
 
 void init_player(player_t *player) {
 
@@ -78,39 +79,77 @@ void out_of_bounds_check_player(float *new_x,  float *new_y, int *heading) {
 }
 
 
+void calculate_vel_vec(player_t *player) {
+    
+    float dir_x = 0.0f;
+    float dir_y = 0.0f;
+
+    if (player->current_heading == UP) {
+        dir_y = -1.0f; 
+    } else if (player->current_heading == DOWN) {
+        dir_y = 1.0f;
+    } else if (player->current_heading == LEFT) {
+        dir_x = -1.0f;
+    } else if (player->current_heading == RIGHT) {
+        dir_x = 1.0f;
+    }
+
+    const float speed = (float)player->current_speed * BASE_TILE_CHANGE;
+
+    player->vel_x = dir_x * speed; // speed evaluated by time and level
+    player->vel_y = dir_y * speed * 0.56f; // adjust for terminal character aspect ratio
+
+}
+
+
+void player_move(player_t *player) {
+
+
+    player->coordinates.x += player->vel_x;
+    player->coordinates.y += player->vel_y;
+
+}
+
 void update_player_position(player_t *player) {
     if (!player->in_taxi)
     {
-    int *heading = &player->current_heading;
-    const float move = (float)player->current_speed * 0.3f;
-    float new_y = player->coordinates.y;
-    float new_x = player->coordinates.x;
+    // int *heading = &player->current_heading;
+    // const float move = (float)player->current_speed * 0.3f;
+    // float new_y = player->coordinates.y;
+    // float new_x = player->coordinates.x;
 
-    switch (player->current_heading) {
-        case UP: {
-            new_y -= move * 0.56f;
-            break;
-        }
-        case DOWN: {
-            new_y += move * 0.56f;
-            break;
-        }
-        case LEFT: {
-            new_x -= move;
-            break;
-        }
-        case RIGHT: {
-            new_x += move;
-            break;
-        }
-        default: { break; }
-    }
+    // switch (player->current_heading) {
+    //     case UP: {
+    //         calculate_vel_vec(player, player->current_heading);
+    //         // new_y -= move * 0.56f;
+    //         break;
+    //     }
+    //     case DOWN: {
+    //         calculate_vel_vec(player, player->current_heading);
+    //         // new_y += move * 0.56f;
+    //         break;
+    //     }
+    //     case LEFT: {
+    //         calculate_vel_vec(player, player->current_heading);
+    //         // new_x -= move;
+    //         break;
+    //     }
+    //     case RIGHT: {
+    //         calculate_vel_vec(player, player->current_heading);
+    //         // new_x += move;
+    //         break;
+    //     }
+    //     default: { break; }
+    // }
+    
+    calculate_vel_vec(player);
+    
+    player_move(player);
 
+    out_of_bounds_check_player(&player->coordinates.x, &player->coordinates.y, &player->current_heading);
 
-    out_of_bounds_check_player(&new_x, &new_y, heading);
-
-    player->coordinates.x = new_x;
-    player->coordinates.y = new_y;
+    // player->coordinates.x = new_x;
+    // player->coordinates.y = new_y;
     }
 
 }
@@ -148,10 +187,10 @@ void move_player(player_t *player, int *input_key) {
             }
             break;
         }
-            case 'x': { // debug button
+        //     case 'x': { // debug button
 
-            break;
-        }
+        //     break;
+        // }
         default: {
             player->current_heading = player->current_heading;
             break;
