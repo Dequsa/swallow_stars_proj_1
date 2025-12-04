@@ -2,7 +2,7 @@
 #include "board.h" // connects all libs together
 #include <cstring>
 #include <time.h>
-#include <sys/time.h> // For gettimeofday() to get real-world time
+#include <sys/time.h>
 #define CFG_S "../CONFIGS/stats.cfg"
 #define CFG_H "../CONFIGS/hunters.cfg"
 #define CFG_B "../CONFIGS/board.cfg"
@@ -11,6 +11,20 @@
 #define ERR_NPTR (-2)
 #define LEVEL_AMM 5
 #define TAXI_KEY 'x'
+
+int check_string_validity(const char *str) {
+    if (strlen(str) == 0 || isspace(str[0])) {
+        return FALSE;
+    }
+    return TRUE;
+}
+
+
+void check_player_name(char *player_name) {
+    if (!check_string_validity(player_name)) {
+        strcpy(player_name, "guest");
+    }
+}
 
 
 int check_null_pointer(const FILE* fptr) {
@@ -25,26 +39,27 @@ int load_config_player(FILE* fptr ,player_t *player) {
 
     fptr = fopen(CFG_S, "r");
 
-    if (check_null_pointer(fptr)) return ERR_NPTR;
+    if (check_null_pointer(fptr))
+        return ERR_NPTR;
 
     int r = 0;
-    char c_l[MAX_LINE_SIZE]; // current line
+    char current_line[MAX_LINE_SIZE];
 
-    while (fgets( c_l, MAX_LINE_SIZE, fptr)) {
+    while (fgets( current_line, MAX_LINE_SIZE, fptr)) {
 
-        char n_o_v_c[MAX_LINE_SIZE]; // name of variable config
+        char current_var[MAX_LINE_SIZE]; // name of variable config
 
-        const int temp_line = sscanf(c_l, "%d @%s", &r, n_o_v_c);
+        const int temp_line = sscanf(current_line, "%d @%s", &r, current_var);
 
-        if (strcmp(n_o_v_c, "MAX_HEALTH") == 0 && temp_line == 2) {
+        if (strcmp(current_var, "MAX_HEALTH") == 0 && temp_line == 2) {
 
             player->max_health = r;
 
-        }else if (strcmp(n_o_v_c, "MAX_SPEED") == 0 && temp_line == 2) {
+        }else if (strcmp(current_var, "MAX_SPEED") == 0 && temp_line == 2) {
 
             player->max_speed = r;
 
-        }else if (strcmp(n_o_v_c, "MIN_SPEED") == 0 && temp_line == 2) {
+        }else if (strcmp(current_var, "MIN_SPEED") == 0 && temp_line == 2) {
             player->min_speed = r;
         }
     }
@@ -61,58 +76,58 @@ int load_config_hunter(FILE* fptr, type_t *t) {
     if (check_null_pointer(fptr)) return ERR_NPTR;
 
     int r = 0;
+    char current_line[MAX_LINE_SIZE];
+    int type_num = -1;
 
-    char c_l[MAX_LINE_SIZE];
-    int c_a_n = -1;
-    while (fgets( c_l, MAX_LINE_SIZE, fptr)) {
+    while (fgets( current_line, MAX_LINE_SIZE, fptr)) {
 
-        char n_o_v_h[MAX_LINE_SIZE]; // name of line variable hunter e.g HUNTER_DMG
+        char current_var[MAX_LINE_SIZE]; // name of line variable hunter e.g HUNTER_DMG
 
-        int temp_line = sscanf(c_l, "%d @%s", &r, n_o_v_h);
+        int temp_line = sscanf(current_line, "%d @%s", &r, current_var);
 
         if (temp_line != 2) {
             continue;
         }
 
-        if (strcmp(n_o_v_h, "HUNTER_TYPE_ID") == 0) {
-            c_a_n = r;
+        if (strcmp(current_var, "HUNTER_TYPE_ID") == 0) {
+            type_num = r;
         }
 
-        if (c_a_n == -1) {
+        if (type_num == -1 || type_num >= HUNTER_TYPE_AMM) {
             return CONFIG_ERR;
         }
 
-        if (strcmp(n_o_v_h, "HUNTER_DMG") == 0) {
+        if (strcmp(current_var, "HUNTER_DMG") == 0) {
 
-            t[c_a_n].dmg = r;
+            t[type_num].dmg = r;
 
-        } else if (strcmp(n_o_v_h, "MAX_BOUNCES") == 0) {
+        } else if (strcmp(current_var, "MAX_BOUNCES") == 0) {
 
-            t[c_a_n].bounces_max = r;
+            t[type_num].bounces_max = r;
 
-        }else if (strcmp(n_o_v_h, "WIDTH") == 0) {
+        }else if (strcmp(current_var, "WIDTH") == 0) {
 
-            t[c_a_n].size.width = r;
+            t[type_num].size.width = r;
 
-        }else if (strcmp(n_o_v_h, "HEIGHT") == 0) {
+        }else if (strcmp(current_var, "HEIGHT") == 0) {
 
-            t[c_a_n].size.height = r;
+            t[type_num].size.height = r;
 
-        }else if (strcmp(n_o_v_h, "SPAWN_CHANCE_PERCENT") == 0) {
+        }else if (strcmp(current_var, "SPAWN_CHANCE_PERCENT") == 0) {
 
-            t[c_a_n].spawn_chance = r;
+            t[type_num].spawn_chance = r;
 
-        }else if (strcmp(n_o_v_h, "MAX_SPEED") == 0) {
+        }else if (strcmp(current_var, "MAX_SPEED") == 0) {
 
-            t[c_a_n].max_speed = r;
+            t[type_num].max_speed = r;
 
-        }else if (strcmp(n_o_v_h, "MIN_SPEED") == 0) {
+        }else if (strcmp(current_var, "MIN_SPEED") == 0) {
 
-            t[c_a_n].min_speed = r;
+            t[type_num].min_speed = r;
 
-        }else if (strcmp(n_o_v_h, "COLOR") == 0) {
+        }else if (strcmp(current_var, "COLOR") == 0) {
 
-            t[c_a_n].color = r;
+            t[type_num].color = r;
 
         }
     }
@@ -129,38 +144,38 @@ int load_config_board(FILE* fptr, board_t *boards_cache) {
 
     int r = 0;
 
-    char c_l[MAX_LINE_SIZE];
-    int c_a_n = -1; // current assign number
-    while (fgets( c_l, MAX_LINE_SIZE, fptr)) {
+    char current_line[MAX_LINE_SIZE];
+    int lvl_num = -1; // current assign number
+    while (fgets( current_line, MAX_LINE_SIZE, fptr)) {
 
-        char n_o_v_b[MAX_LINE_SIZE];
+        char current_var[MAX_LINE_SIZE];
 
-        int temp_line = sscanf(c_l, "%d @%s", &r, n_o_v_b);
+        int temp_line = sscanf(current_line, "%d @%s", &r, current_var);
 
         if (temp_line != 2) {
             continue;
         }
 
-        if (strcmp(n_o_v_b, "LEVEL_ID") == 0) {
-            c_a_n = r;
+        if (strcmp(current_var, "LEVEL_ID") == 0) {
+            lvl_num = r;
         }
 
-        if (c_a_n == -1) {
+        if (lvl_num == -1 || lvl_num >= LEVEL_AMM) {
             return CONFIG_ERR;
         }
 
 
-        if (strcmp(n_o_v_b, "MAX_HUNTERS") == 0) {
+        if (strcmp(current_var, "MAX_HUNTERS") == 0) {
 
-            boards_cache[c_a_n].max_hunters = r;
+            boards_cache[lvl_num].max_hunters = r;
 
-        }else if (strcmp(n_o_v_b, "STAR_QUOTA") == 0) {
+        }else if (strcmp(current_var, "STAR_QUOTA") == 0) {
 
-            boards_cache[c_a_n].star_quota = r;
+            boards_cache[lvl_num].star_quota = r;
 
-        }else if (strcmp(n_o_v_b, "TIME") == 0) {
+        }else if (strcmp(current_var, "TIME") == 0) {
 
-            boards_cache[c_a_n].time_left = r;
+            boards_cache[lvl_num].time_left = r;
 
         }
     }
@@ -171,11 +186,11 @@ int load_config_board(FILE* fptr, board_t *boards_cache) {
 
 double get_current_time_seconds() {
 
-    struct timeval current_time;
+    timeval current_time{};
 
     gettimeofday(&current_time, nullptr);
 
-    return current_time.tv_sec + (current_time.tv_usec / 1000000.0);
+    return current_time.tv_sec + (current_time.tv_usec / 1000000);
 
 }
 
@@ -183,16 +198,19 @@ double get_current_time_seconds() {
 int calculate_time_left_frames(const board_t *board) {
 
     const double current_time = get_current_time_seconds();
+    const double start_time_lvl = board->level_start_time;
+    const double time_limit_lvl = board->time_limit_seconds;
 
-    const double elapsed_time = current_time - board->level_start_time;
+    const double passed_time = current_time - start_time_lvl;
 
-    const double time_remaining = board->time_limit_seconds - elapsed_time;
+    const double time_remaining = time_limit_lvl - passed_time;
 
     return (int)(time_remaining * FPS);
+
 }
 
 
-void hunter_earase_all(hunter_t *hunters, player_t *player) {
+void hunter_delete_all(hunter_t *hunters, player_t *player) {
 
     for (int i = 0; i < MAX_AMM_HUNTERS; i++) {
         if (hunters[i].is_active == TRUE) {
@@ -205,26 +223,28 @@ void hunter_earase_all(hunter_t *hunters, player_t *player) {
 
 
 void level_complete(board_t *board, const board_t *boards_cache ,player_t *player, const int current_lvl, hunter_t *hunters, const type_t *types_hunter, taxi_t *taxi) {
-    board->is_over = FALSE;
+
+    board->time_limit_seconds = boards_cache[current_lvl].time_left;
+    board->level_start_time = get_current_time_seconds();
+    board->time_left = boards_cache[current_lvl].time_left * FPS;
 
     board->max_hunters = boards_cache[current_lvl].max_hunters;
     board->star_quota = boards_cache[current_lvl].star_quota;
     board->eva_lvl = boards_cache[current_lvl].eva_lvl;
-    board->time_limit_seconds = boards_cache[current_lvl].time_left;
-    board->level_start_time = get_current_time_seconds();
-    board->time_left = boards_cache[current_lvl].time_left * FPS;
+    board->is_over = FALSE;
 
     player->health = player->max_health;
     player->coordinates.x = COLS / 2;
     player->coordinates.y = LINES / 2;
     player->max_hunters_on_board = board->max_hunters;
     player->stars_collected = 0;
+
     player->has_called_taxi = FALSE;
     player->in_taxi = FALSE;
     taxi->is_active = FALSE;
     taxi->visible = FALSE;
 
-    hunter_earase_all(hunters, player);
+    hunter_delete_all(hunters, player);
     hunter_spawn(hunters, player, types_hunter, board->eva_time_interval);
 
     if (current_lvl > 0) {
@@ -336,12 +356,12 @@ int check_over(const int time_left, const int health, int* game_over, const int 
 }
 
 
-void save_score(int *player_score, int *collected_stars, int *time_left) {
+void save_score(int *player_score, const int *collected_stars, const int *time_left) {
 
-    int points_from_stars = (*collected_stars) * 100;
-    int seconds_left = (*time_left) / FPS;
+    const int points_from_stars = (*collected_stars) * 100;
 
-    int points_from_time = seconds_left * 10;
+    const int seconds_left = (*time_left) / FPS;
+    const int points_from_time = seconds_left * 10;
 
     *player_score += (points_from_stars + points_from_time);
 }
@@ -413,10 +433,9 @@ int main() {
     board_t boards_cache[LEVEL_AMM];
     player_t player;
     taxi_t taxi;
+    FILE *fptr = nullptr;
 
     seed_set();
-
-    FILE *fptr = nullptr;
 
     load_configs(fptr, &player, hunter_types, boards_cache);
 
@@ -429,6 +448,7 @@ int main() {
     char player_name[MAX_PLAYER_NAME_LENGTH];
 
     get_player_name(player_name);
+    check_player_name(player_name);
 
     main_game_loop(&board, boards_cache, &player, hunters, hunter_types, stars, player_name, &taxi);
 

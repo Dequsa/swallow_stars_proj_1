@@ -20,7 +20,7 @@ void init_player(player_t *player) {
 
 
     const char temp_sprite_1[] = "\\-V-/\0";
-    const char temp_sprite_2[] = "/-V-\\\0";
+    const char temp_sprite_2[] = "/-O-\\\0";
 
     int i = 0;
     while (temp_sprite_1[i] != '\0') {
