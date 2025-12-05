@@ -73,85 +73,91 @@ void taxi_spawn(taxi_t *taxi) {
 }
 
 
+void taxi_state_pickup(taxi_t *taxi, player_t *player) {
+
+    calc_vel_taxi(taxi, player->coordinates.x, player->coordinates.y);
+    taxi->position.x += taxi->velocity.x;
+    taxi->position.y += taxi->velocity.y;
+
+    if (check_position(player->coordinates.x, player->coordinates.y, taxi->position.x, taxi->position.y, PICKUP_RADIUS)) {
+        taxi->picked = TRUE;
+        player->in_taxi = TRUE;
+
+        // look for random drop location
+        taxi->drop_off.x = (float)(rand() % PLAYABLE_AREA_X);
+        taxi->drop_off.y = (float)(rand() % PLAYABLE_AREA_Y);
+
+        taxi->found_drop = FALSE; // don't look for another
+    }
+}
+
+
+void taxi_state_transport(taxi_t *taxi, player_t *player, const int input_key) {
+
+    // calculate velocity only once when picked up
+    if (!taxi->found_drop) {
+        calc_vel_taxi(taxi, taxi->drop_off.x, taxi->drop_off.y);
+        taxi->found_drop = TRUE;
+    }
+
+    // taxi--player movement
+    taxi->position.x += taxi->velocity.x;
+    taxi->position.y += taxi->velocity.y;
+    player->coordinates.x = taxi->position.x;
+    player->coordinates.y = taxi->position.y;
+
+    int reached_drop_off = check_position(taxi->drop_off.x, taxi->drop_off.y, taxi->position.x, taxi->position.y, PICKUP_RADIUS);
+
+    if (reached_drop_off || input_key == TAXI_EXIT_KEY) {
+        // leave player
+        player->in_taxi = FALSE;
+        player->health = player->max_health; // heal
+        taxi->dropped = TRUE;
+        taxi->picked = FALSE;
+        taxi->cooldown = FPS * 30;
+
+        float exit_x = (taxi->position.x > COLS / 2) ? COLS + 10 : -10;
+        calc_vel_taxi(taxi, exit_x, taxi->position.y);
+    }
+}
+
+
+void taxi_state_leave(taxi_t *taxi, player_t *player) {
+
+    taxi->position.x += taxi->velocity.x;
+    taxi->position.y += taxi->velocity.y;
+
+    if (out_of_bounds_check_taxi(taxi->position.x, taxi->position.y)) { // in case taxi wants to go out
+
+        taxi->is_active = FALSE;
+        taxi->visible = FALSE;
+
+        player->in_taxi = FALSE; // leave player
+    }
+}
+
+
 void taxi_update(taxi_t *taxi, player_t *player, const int input_key) {
 
-        if (taxi->is_active) {
-                
-                taxi->visible = TRUE;
+    if (!taxi->is_active) {
+        return;
+    }
 
-                if (!taxi->dropped) {
+    taxi->visible = TRUE;
 
-                        if (!taxi->picked) {
+    if (taxi->dropped) { // leave the screen
 
-                                calc_vel_taxi(taxi, player->coordinates.x, player->coordinates.y);
+        taxi_state_leave(taxi, player);
 
-                                taxi->position.x += taxi->velocity.x;
-                                taxi->position.y += taxi->velocity.y;
+    }
+    else if (taxi->picked) { // move w. the player
 
-                                int collision_taxi_player = check_position(player->coordinates.x, player->coordinates.y, taxi->position.x, taxi->position.y, PICKUP_RADIUS);
+        taxi_state_transport(taxi, player, input_key);
 
-                                if ( collision_taxi_player ) { // reached playe 
-                                        
-                                        taxi->picked = TRUE;
-                                        player->in_taxi = TRUE;
+    }
+    else { // try to pick up the player
 
-                                        float drop_x = (float)(rand() % PLAYABLE_AREA_X);
-                                        float drop_y = (float)(rand() % PLAYABLE_AREA_Y);
+        taxi_state_pickup(taxi, player);
 
-                                        taxi->drop_off.x = drop_x;
-                                        taxi->drop_off.y = drop_y;
-
-                                }
-
-                        } else {
-
-                                if(!taxi->found_drop) {
-                                
-                                        calc_vel_taxi(taxi, taxi->drop_off.x, taxi->drop_off.y);
-                                        taxi->found_drop = TRUE;
-
-                                }
-                                
-                                taxi->position.x += taxi->velocity.x;
-                                taxi->position.y += taxi->velocity.y;
-
-                                player->coordinates.x = taxi->position.x;
-                                player->coordinates.y = taxi->position.y;
-
-                                int reached_drop_off = check_position(taxi->drop_off.x, taxi->drop_off.y, taxi->position.x, taxi->position.y, PICKUP_RADIUS);
-
-                                if (reached_drop_off || input_key == TAXI_EXIT_KEY) { // reached drop off point
-
-                                        player->in_taxi = FALSE;
-                                        player->health = player->max_health; // heal player on drop off
-
-                                        taxi->dropped = TRUE;  
-                                        taxi->picked = FALSE;
-                                        taxi->cooldown = FPS * 30; // reset cooldown 30s
-
-                                        float exit_x = (taxi->position.x > COLS / 2) ? COLS + 10 : -10;
-                                
-
-                                        float exit_y = taxi->position.y;
-
-                                        calc_vel_taxi(taxi, exit_x, exit_y); // calc exit vector
-
-                                }
-                        }
-                }
-
-                if (taxi->dropped) {
-
-                        taxi->position.x += taxi->velocity.x;
-                        taxi->position.y += taxi->velocity.y;
-
-                        if (out_of_bounds_check_taxi(taxi->position.x, taxi->position.y)) {
-
-                                taxi->is_active = FALSE;
-                                taxi->visible = FALSE;
-                                player->in_taxi = FALSE;
-
-                        }
-                }
-        }
+    }
 }

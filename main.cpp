@@ -441,7 +441,7 @@ void save_score(int *player_score, const int *collected_stars, const int *time_l
 }
 
 
-void physics(player_t *player, hunter_t *hunters, board_t *board, star_t *stars, int *stars_count, wind_t *wind, int *input_key, const type_t *hunter_types, taxi_t *taxi, const board_t *boards_cache, int current_lvl ) {
+void logic(player_t *player, hunter_t *hunters, board_t *board, star_t *stars, int *stars_count, wind_t *wind, int *input_key, const type_t *hunter_types, taxi_t *taxi, const board_t *boards_cache, int current_lvl ) {
 
     wind_all(wind, player, hunters);
 
@@ -457,60 +457,71 @@ void physics(player_t *player, hunter_t *hunters, board_t *board, star_t *stars,
 }
 
 
-void main_game_loop(board_t *board, const board_t *boards_cache, player_t *player, hunter_t *hunters, const type_t *hunter_types, star_t *stars, char* player_name, taxi_t *taxi, wind_t *wind, WINDOW *game_window, WINDOW *status_window) {
-
-    timespec req{};
-    timespec rem{};
-    req.tv_nsec = 16666666; // approx. 60fps
-    req.tv_sec = 0;
-
-    int stars_count = 0;
-    int current_lvl;
+void setup_player(player_t *player, char* player_name, WINDOW *game_window) {
 
     player->score = 0;
 
     get_player_name(player_name, game_window);
+
     check_player_name(player_name);
 
-    for (current_lvl = 0 ; current_lvl < LEVEL_AMM; current_lvl++) {
-
-        level_complete(board, boards_cache, player, current_lvl, hunters, hunter_types, taxi, game_window);
-        taxi_spawn(taxi);
-
-        while (!board->is_over) {
-
-            int input_key = -1;
-
-            physics(player, hunters, board, stars, &stars_count, wind, &input_key, hunter_types, taxi, boards_cache, current_lvl);
-
-            update_screen(player, stars, hunters, player_name, board->time_left, current_lvl, taxi, game_window, status_window);
-
-            board->time_left = calculate_time_left_frames(board);
-
-            nanosleep(&req, &rem);
+}
 
 
-            if (check_over(board->time_left, player->health, &board->is_over, player->stars_collected, board->star_quota, input_key)) {
-            
-                save_score(&player->score, &player->stars_collected, &board->time_left);
-                break;
-            }
+void run_single_level(int current_lvl, board_t *board, const board_t *boards_cache, player_t *player, hunter_t *hunters, const type_t *hunter_types, star_t *stars, int *stars_count, taxi_t *taxi, wind_t *wind, char* player_name, WINDOW *game_window, WINDOW *status_window) {
 
+    level_complete(board, boards_cache, player, current_lvl, hunters, hunter_types, taxi, game_window);
+    taxi_spawn(taxi);
+
+    timespec req = {0, 16666666}; // approx 60fps
+    timespec rem = {0, 0};
+
+    while (!board->is_over) {
+        int input_key = -1;
+
+        // movement/collision/etc.
+        logic(player, hunters, board, stars, stars_count, wind, &input_key, hunter_types, taxi, boards_cache, current_lvl);
+
+        // render
+        update_screen(player, stars, hunters, player_name, board->time_left, current_lvl, taxi, game_window, status_window);
+
+        // time Management
+        board->time_left = calculate_time_left_frames(board);
+        nanosleep(&req, &rem);
+
+        // win Check
+        if (check_over(board->time_left, player->health, &board->is_over, player->stars_collected, board->star_quota, input_key)) {
+
+            save_score(&player->score, &player->stars_collected, &board->time_left);
+
+            break;
         }
+    }
+}
 
-        if (current_lvl == LEVEL_AMM - 1 && !board->is_over) {
-            
-            show_win_screen(game_window);
-        
-        }
-        
+
+void main_game_loop(board_t *board, const board_t *boards_cache, player_t *player, hunter_t *hunters, const type_t *hunter_types, star_t *stars, char* player_name, taxi_t *taxi, wind_t *wind, WINDOW *game_window, WINDOW *status_window) {
+
+    int stars_count = 0;
+
+    setup_player(player, player_name, game_window);
+
+    for (int current_lvl = 0; current_lvl < LEVEL_AMM; current_lvl++) {
+
+        run_single_level(current_lvl, board, boards_cache, player, hunters, hunter_types, stars, &stars_count, taxi, wind, player_name, game_window, status_window);
+
         if (board->is_over) {
             break;
+        }
+
+        if (current_lvl == LEVEL_AMM - 1) {
+
+            show_win_screen(game_window);
+
         }
     }
 
     game_over(player_name, player->score, game_window, status_window);
-
 }
 
 
