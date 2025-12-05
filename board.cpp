@@ -4,7 +4,7 @@
 
 #include "board.h"
 #include <cstring>
-#define SCORE_P "./SCORES/scores.txt"
+#define SCORE_P "../SCORES/scores.txt"
 #define AMM_OF_SCORES_TO_SHOW 10
 
 WINDOW *game_window = nullptr;
@@ -15,21 +15,21 @@ void init_board(board_t *board) { // initialize everything for the board and sta
 
      //------------ CURSES STUFF -----------
      initscr(); // start screen curses
-     start_color(); // sets colors on on the termianl
-     has_colors(); // checks if terminal has colors
+     start_color(); // sets colors on the terminal
      cbreak(); // stop the buffer input is real-time
      noecho(); // do not show current input
      curs_set(FALSE); // disable cursor display
      nodelay(stdscr, TRUE); // non blocking input
      keypad(stdscr, TRUE); //enable arrows
+
      // init colors
-     init_pair(0, COLOR_WHITE, COLOR_BLACK);
      init_pair(1, COLOR_GREEN, COLOR_BLACK);
      init_pair(2, COLOR_YELLOW, COLOR_BLACK); // taxi
      init_pair(3, COLOR_RED, COLOR_BLACK);
      init_pair(4, COLOR_MAGENTA, COLOR_BLACK); // player
-     init_pair(5, COLOR_CYAN, COLOR_BLACK); 
-     init_pair(6, COLOR_CYAN, COLOR_BLACK);
+     init_pair(5, COLOR_CYAN, COLOR_BLACK);
+     init_pair(6, COLOR_BLUE, COLOR_BLACK);
+     init_pair(7, COLOR_WHITE, COLOR_BLACK);
      // ------------------------------------
 
      const int game_height = LINES - STATUS_LINE_SIZE;
@@ -100,7 +100,7 @@ void update_player( const player_t *player, WINDOW *window, const int current_fr
 
   color = choose_color_player(player->health, player->max_health);
 
-  if (current_frame >= 0 && current_frame < FPS / 15) {
+  if (current_frame >= 0 && current_frame < FPS / 6) {
 
     sprite_to_draw = player->frame_one;
   
@@ -158,8 +158,8 @@ void update_hunter(hunter_t *hunter) {
 
    for (int j = 0; j < hunter->width; j++) {
 
-    const int h_x = (int)hunter->hunter_pos.x + i;
-    const int h_y = (int)hunter->hunter_pos.y + j;
+    const int h_x = (int)hunter->hunter_pos.x + j;
+    const int h_y = (int)hunter->hunter_pos.y + i;
 
     mvwprintw(game_window, h_y, h_x, "%c", 'H');
 
@@ -169,7 +169,7 @@ void update_hunter(hunter_t *hunter) {
 
      const int display_bounces = hunter->bounces_left - hunter->bounces_done;
 
-     mvwprintw(game_window, h_y - hunter->height, h_x, "%d", display_bounces);
+     mvwprintw(game_window, h_y - 1.0f, h_x, "%d", display_bounces);
 
     }
    }
@@ -214,7 +214,7 @@ void update_screen(const player_t *player, const star_t *stars, hunter_t *hunter
 
   static int current_frame = 0;
 
-  if (current_frame == FPS/6) {
+  if (current_frame == FPS/3) {
    current_frame = 0;
   }
 
@@ -353,32 +353,6 @@ void game_over(char* player_name, const int score) {
 }
 
 
-void show_lvl_complete(const int current_lvl) {
-
- werase(game_window);
-
- mvwprintw(game_window, LINES / 2, COLS / 2, "%d COMPLETED", current_lvl);
- mvwprintw(game_window, LINES / 2 + 1, COLS / 2, "PRESS ANY BUTTON TO CONTINUE");
-
- wrefresh(game_window);
-
- nodelay(stdscr, FALSE);
-
- timespec req{};
- timespec rem{};
- req.tv_nsec = 0;
- req.tv_sec = 1; // 3s sleep so player doesn't instantly turn  off-screen
-
- nanosleep(&req, &rem);
-
- while (getch() == -1) {
-
- }
- nodelay(stdscr, TRUE);
-
-}
-
-
 void get_player_name(char *name) {
 
 
@@ -397,6 +371,32 @@ void get_player_name(char *name) {
  nodelay(stdscr, TRUE); // non-blocking input
 
 }
+
+
+void show_lvl_complete(const int current_lvl) {
+
+ werase(game_window);
+
+ mvwprintw(game_window, LINES / 2, COLS / 2, "%d COMPLETED", current_lvl);
+ mvwprintw(game_window, LINES / 2 + 1, COLS / 2, "PRESS ANY BUTTON TO CONTINUE");
+
+ wrefresh(game_window);
+
+ timespec req{};
+ timespec rem{};
+ req.tv_nsec = 0;
+ req.tv_sec = 1; // 3s sleep so player doesn't instantly turn  off-screen
+
+ nanosleep(&req, &rem);
+
+ nodelay(stdscr, FALSE);
+
+ getch();
+
+ nodelay(stdscr, TRUE);
+
+}
+
 
 void show_win_screen() {
 
@@ -417,9 +417,8 @@ void show_win_screen() {
 
  nanosleep(&req, &rem);
 
- while (getch() == -1) {
+ getch();
 
- }
  nodelay(stdscr, TRUE);
 
 }

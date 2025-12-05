@@ -8,7 +8,7 @@
 #define TRUE 1
 #define FALSE 0
 #define PLAYER_WIDTH 3
-#endif //SWALLOW_GAME_PROJ_1_STARS_H
+
 
 typedef struct {
     float x;
@@ -30,3 +30,5 @@ void stars_spawn(star_t *star, int *stars_count);
 void stars_update(star_t *star, int *stars_count);
 
 void stars_collect(star_t *star, player_t *player, int *stars_count);
+
+#endif //SWALLOW_GAME_PROJ_1_STARS_H

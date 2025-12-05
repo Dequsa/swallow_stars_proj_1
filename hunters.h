@@ -6,7 +6,7 @@
 #define SWALLOW_GAME_PROJ_1_HUNTERS_H
 #define MAX_AMM_HUNTERS 50
 #define HUNTER_TYPE_AMM 5
-#endif //SWALLOW_GAME_PROJ_1_HUNTERS_H
+
 
 typedef struct {
     float x;
@@ -58,12 +58,14 @@ void hunter_init(hunter_t *hunter, const type_t *type);
 
 void hunter_spawn(hunter_t *hunter, player_t *player,const type_t *type, const int eva_time);
 
-void hunter_update(hunter_t *hunter, player_t *player, const int eva_time);
+void hunter_update(hunter_t *hunter, player_t *player, const int eva_time, int **map);
 
-void hunter_dmg(hunter_t *hunter, player_t *player);
+void hunter_dmg(hunter_t *hunter, player_t *player, int **map);
 
-void hunter_move(const hunter_t *hunter, const player_t *player);
+void hunter_move(const hunter_t *hunter);
 
 void calculate_vel_vec(hunter_t *hunter, const player_t *player, const int eva_time);
 
 int check_object_player_collision( const float obj_x, const float obj_y, const float player_x, const float player_y, const float obj_offset_x, const float obj_offset_y, const float player_offset_x, const float player_offset_y);
+
+#endif //SWALLOW_GAME_PROJ_1_HUNTERS_H
