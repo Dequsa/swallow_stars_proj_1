@@ -25,6 +25,9 @@
 #define CYAN 5
 #define BLUE 6
 #define WHITE 7
+#define OCC_EMPTY (-1)
+#define OCC_PLAYER (-2)
+#define OCC_STAR (-3)
 
 
 

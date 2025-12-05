@@ -21,7 +21,7 @@ typedef struct {
     position_t drop_off;
 }taxi_t;
 
-int check_position(float tar_x, float tar_y, float source_x, float source_y, float r);
+int check_position(const float tar_x, const float tar_y, const float source_x, const float source_y, const float r); // used for hunter dash check
 
 void taxi_spawn(taxi_t *taxi);
 

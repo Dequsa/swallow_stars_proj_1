@@ -95,10 +95,11 @@ void update_status(const player_t *player, WINDOW *status_window ,const char *na
 
 void update_player( const player_t *player, WINDOW *game_window, const int current_frame) {
 
-  int color;
+ if (player->in_taxi) return ; // don't render player if in taxi
+
   const char *sprite_to_draw;
 
-  color = choose_color_player(player->health, player->max_health);
+  const int color = choose_color_player(player->health, player->max_health);
 
   if (current_frame >= 0 && current_frame < FPS / 6) {
 
@@ -204,6 +205,7 @@ void update_taxi(taxi_t *taxi, WINDOW *game_window) {
  }
 
 }
+
 
 
 void update_screen(const player_t *player, const star_t *stars, hunter_t *hunter,

@@ -265,21 +265,21 @@ void hunter_dmg(hunter_t *hunters, player_t *player, int **map) {
     if (player->in_taxi) return; // no damage in taxi
 
     // int converison for map comparison
-    int p_x = (int)player->coordinates.x;
-    int p_y = (int)player->coordinates.y;
+    const int p_x = (int)player->coordinates.x;
+    const int p_y = (int)player->coordinates.y;
 
     for (int i = 0; i < PLAYER_SPRITE_SIZE; i++) {
 
-        int check_x = p_x + i; // player width offset
-        int check_y = p_y; // player height offset
+        const int check_x = p_x + i; // player width offset
+        const int check_y = p_y; // player height offset
 
-        if (check_x >= 0 && check_x < COLS && check_y >= 0 && check_y < LINES) { // bounds check for safety in case of runner hunter
+        if (check_x >= 0 && check_x < COLS && check_y >= 0 && check_y < LINES) { // bounds check for safety
 
             int cell_content = map[check_y][check_x]; // get content of the cell on occupancy map from board
 
             if (cell_content >= 0) {
 
-                int hunter_id = cell_content; // hunter index on map is stored as cell content with size of index
+                const int hunter_id = cell_content; // hunter index on map is stored as cell content with size of index
 
                 player->health -= hunters[hunter_id].dmg;
                 player->current_amm_of_hunters_on_board--;

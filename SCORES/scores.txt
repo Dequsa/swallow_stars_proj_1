@@ -59,3 +59,11 @@ as 270
 guest 3890
 guest 900
 guest 300
+guest 100
+guest 6140
+guest 280
+guest 500
+guest -29090
+guest 15790
+guest 100
+guest 0

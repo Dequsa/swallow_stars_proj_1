@@ -57,22 +57,51 @@ void stars_update(star_t *star, int *stars_count) {
 }
 
 
-void stars_collect(star_t *star, player_t *player, int *stars_count) {
+void stars_collect(star_t *star, player_t *player, int *stars_count, int **map) {
 
-    for (int i = 0; i < MAX_AMM_STARS; i++) {
+    if (player->in_taxi) return;
 
-        if (star[i].is_active == TRUE && check_object_player_collision(star[i].position.x, star[i].position.y, player->coordinates.x, player->coordinates.y, STAR_WIDTH, 1.0f, PLAYER_SPRITE_SIZE, PLAYER_SPRITE_Y_SIZE)) {
+    const int p_x = (int)player->coordinates.x;
+    const int p_y = (int)player->coordinates.y;
 
-            star[i].is_active = FALSE;
-            star[i].position.y = 0.0f;
-            star[i].velocity = 0.0f;
+    for (int i = 0; i < PLAYER_SPRITE_SIZE; i++) { // iterate through every player "hitbox"
 
-            (*stars_count)--;
+        const int check_x = p_x + i;
 
-            player->stars_collected++;
+        for (int dy = -1; dy <= 1; dy++) { // check for above and below of the player position in case of miss-matching speeds
 
+            const int check_y = p_y + dy;
+
+            if (check_x >= 0 && check_x < COLS && check_y >= 0 && check_y < LINES) { // boundary check for player so it doesn't look off map
+
+                const int cell_content = map[check_y][check_x];
+
+                if (cell_content == OCC_STAR) {
+
+                    for (int k = 0; k < MAX_AMM_STARS; k++) {
+
+                        if (star[k].is_active == TRUE) {
+
+                            const int star_x = (int)star[k].position.x;
+                            const int star_y = (int)star[k].position.y;
+
+                            if (star_x == check_x && star_y == check_y) {
+
+                                star[k].is_active = FALSE;
+                                star[k].position.y = 0.0f;
+                                star[k].velocity = 0.0f;
+
+                                player->stars_collected++;
+                                (*stars_count)--;
+
+                                map[check_y][check_x] = OCC_EMPTY; // clear the space so player won't collect the star multiple times
+
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
         }
-
     }
-
 }

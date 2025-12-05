@@ -29,6 +29,6 @@ void stars_spawn(star_t *star, int *stars_count);
 
 void stars_update(star_t *star, int *stars_count);
 
-void stars_collect(star_t *star, player_t *player, int *stars_count);
+void stars_collect(star_t *star, player_t *player, int *stars_count, int **map);
 
 #endif //SWALLOW_GAME_PROJ_1_STARS_H
