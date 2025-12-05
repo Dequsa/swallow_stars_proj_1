@@ -185,7 +185,7 @@ void hunter_init(hunter_t *hunter, const type_t *type) {
 }
 
 
-int hunter_check_spawn(const hunter_t *hunter, player_t *player) {
+int hunter_check_spawn(const hunter_t *hunter, const player_t *player) {
 
     if (player->current_amm_of_hunters_on_board < player->max_hunters_on_board && hunter->is_active == FALSE && hunter->cooldown <= 0)
         return 1;
@@ -198,8 +198,8 @@ void hunter_choose_spawn_point(hunter_t *hunter) {
 
 
     // maximum spawn ranges
-    int max_spawn_x = PLAYABLE_AREA_SIZE_X - hunter->width;
-    int max_spawn_y = PLAYABLE_AREA_SIZE_Y - hunter->height;
+    const int max_spawn_x = PLAYABLE_AREA_SIZE_X - hunter->width;
+    const int max_spawn_y = PLAYABLE_AREA_SIZE_Y - hunter->height;
 
     switch (rand() % 4) {
 
@@ -221,6 +221,9 @@ void hunter_choose_spawn_point(hunter_t *hunter) {
         case 3: // RIGHT
             hunter->hunter_pos.x = PLAYABLE_AREA_SIZE_X - hunter->width; //
             hunter->hunter_pos.y = 1.0f + (float)(rand() % max_spawn_y);
+            break;
+
+        default:
             break;
     }
 }

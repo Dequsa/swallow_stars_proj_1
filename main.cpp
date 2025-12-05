@@ -14,6 +14,8 @@
 #define OCC_PLAYER -2
 #define OCC_STAR -3
 #define DIFF_MULTIPLIER_MAX 3
+#define SEED FALSE
+
 
 int check_string_validity(const char *str) {
     if (strlen(str) == 0 || isspace(str[0])) {
@@ -288,7 +290,7 @@ void update_occupancy_map(board_t *board, const hunter_t *hunters) {
 }
 
 
-void level_complete(board_t *board, const board_t *boards_cache ,player_t *player, const int current_lvl, hunter_t *hunters, const type_t *types_hunter, taxi_t *taxi) {
+void level_complete(board_t *board, const board_t *boards_cache ,player_t *player, const int current_lvl, hunter_t *hunters, const type_t *types_hunter, taxi_t *taxi, WINDOW *game_window) {
 
     board->time_limit_seconds = boards_cache[current_lvl].time_left;
     board->level_start_time = get_current_time_seconds();
@@ -314,13 +316,20 @@ void level_complete(board_t *board, const board_t *boards_cache ,player_t *playe
     hunter_spawn(hunters, player, types_hunter, board->eva_time_interval);
 
     if (current_lvl > 0) {
-        show_lvl_complete(current_lvl);
+        show_lvl_complete(current_lvl, game_window);
     }
 }
 
 
 void seed_set() {
-    const unsigned long seed = time(nullptr);
+
+    unsigned long seed;
+
+    if (SEED == FALSE) {
+        seed = time(nullptr);
+    } else {
+        seed = SEED;
+    }
     srand(seed);
 }
 
@@ -414,7 +423,7 @@ void save_score(int *player_score, const int *collected_stars, const int *time_l
 }
 
 
-void main_game_loop(board_t *board, board_t *boards_cache, player_t *player, hunter_t *hunters, type_t *hunter_types, star_t *stars, char* player_name, taxi_t *taxi, wind_t *wind) {
+void main_game_loop(board_t *board, board_t *boards_cache, player_t *player, hunter_t *hunters, const type_t *hunter_types, star_t *stars, char* player_name, taxi_t *taxi, wind_t *wind, WINDOW *game_window, WINDOW *status_window) {
 
     timespec req{};
     timespec rem{};
@@ -426,9 +435,12 @@ void main_game_loop(board_t *board, board_t *boards_cache, player_t *player, hun
 
     player->score = 0;
 
+    get_player_name(player_name, game_window);
+    check_player_name(player_name);
+
     for (current_lvl = 0 ; current_lvl < LEVEL_AMM; current_lvl++) {
 
-        level_complete(board, boards_cache, player, current_lvl, hunters, hunter_types, taxi);
+        level_complete(board, boards_cache, player, current_lvl, hunters, hunter_types, taxi, game_window);
         taxi_spawn(taxi);
 
         while (!board->is_over) {
@@ -449,7 +461,7 @@ void main_game_loop(board_t *board, board_t *boards_cache, player_t *player, hun
 
             collision_all(board, hunters, player, stars, &stars_count);
 
-            update_screen(player, stars, hunters, player_name, board->time_left, current_lvl, taxi);
+            update_screen(player, stars, hunters, player_name, board->time_left, current_lvl, taxi, game_window, status_window);
 
             board->time_left = calculate_time_left_frames(board);
 
@@ -466,7 +478,7 @@ void main_game_loop(board_t *board, board_t *boards_cache, player_t *player, hun
 
         if (current_lvl == LEVEL_AMM - 1 && !board->is_over) {
             
-            show_win_screen();
+            show_win_screen(game_window);
         
         }
         
@@ -475,7 +487,7 @@ void main_game_loop(board_t *board, board_t *boards_cache, player_t *player, hun
         }
     }
 
-    game_over(player_name, player->score);
+    game_over(player_name, player->score, game_window, status_window);
 
 }
 
@@ -509,12 +521,14 @@ int main() {
     taxi_t taxi;
     FILE *fptr = nullptr;
     wind_t wind = {};
+    WINDOW *game_window = nullptr;
+    WINDOW *status_window = nullptr;
 
     seed_set();
 
     load_configs(fptr, &player, hunter_types, boards_cache);
 
-    init_board(&board);
+    init_board(&board, game_window, status_window);
     allocate_mem_map(board.occupancy_map);
     init_player(&player);
     stars_init(stars);
@@ -523,10 +537,7 @@ int main() {
 
     char player_name[MAX_PLAYER_NAME_LENGTH];
 
-    get_player_name(player_name);
-    check_player_name(player_name);
-
-    main_game_loop(&board, boards_cache, &player, hunters, hunter_types, stars, player_name, &taxi, &wind);
+    main_game_loop(&board, boards_cache, &player, hunters, hunter_types, stars, player_name, &taxi, &wind, game_window, status_window);
 
 
     free_mem_map(board.occupancy_map);

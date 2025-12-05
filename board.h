@@ -29,9 +29,9 @@
 
 
 
-extern WINDOW *game_window;
-extern WINDOW *status_window;
-extern WINDOW *game_over_window;
+// extern WINDOW *game_window;
+// extern WINDOW *status_window;
+// extern WINDOW *game_over_window;
 
 typedef struct {
     int **occupancy_map;
@@ -58,16 +58,16 @@ typedef struct {
     int score;
 } score_entry_t;
 
-void init_board(board_t *board);
+void init_board(board_t *board, WINDOW *&game_window, WINDOW *&status_window);
 
-void update_screen(const player_t *player, const star_t *stars, hunter_t *hunter, const char *name, const int time_left, const int current_lvl, taxi_t *taxi);
+void update_screen(const player_t *player, const star_t *stars, hunter_t *hunter, const char *name, const int time_left, const int current_lvl, taxi_t *taxi, WINDOW *game_window, WINDOW *status_window);
 
-void game_over(char* player_name, const int score);
+void game_over(const char* player_name, const int score, WINDOW *game_window, WINDOW *status_window);
 
-void show_lvl_complete(const int current_lvl);
+void show_lvl_complete(const int current_lvl, WINDOW *window);
 
-void get_player_name(char *name);
+void get_player_name(char *name, WINDOW *window);
 
-void show_win_screen();
+void show_win_screen(WINDOW *window);
 
 #endif //SWALLOW_GAME_PROJ_1_BOARD_H

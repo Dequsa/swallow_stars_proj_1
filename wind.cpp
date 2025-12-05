@@ -2,7 +2,7 @@
 #define SCREEN_RATIO (0.56f)
 #define WIND_CHANGE_INTERVAL (1 * FPS) // 2 sec interval betwen gusts
 #define WIND_SMOOTHING (0.05f)     // smoothing of the wind
-#define MAX_WIND_FORCE (1.0f)      // max force of the wind gust
+#define MAX_WIND_FORCE (0.75f)      // max force of the wind gust
 
 void update_wind(wind_t *wind) {
     

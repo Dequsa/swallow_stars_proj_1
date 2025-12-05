@@ -7,11 +7,11 @@
 #define SCORE_P "../SCORES/scores.txt"
 #define AMM_OF_SCORES_TO_SHOW 10
 
-WINDOW *game_window = nullptr;
-WINDOW *status_window = nullptr;
-WINDOW *game_over_window = nullptr;
+// WINDOW *game_window = nullptr;
+// WINDOW *status_window = nullptr;
 
-void init_board(board_t *board) { // initialize everything for the board and status bar
+
+void init_board(board_t *board, WINDOW *&game_window, WINDOW *&status_window)  { // initialize everything for the board and status bar
 
      //------------ CURSES STUFF -----------
      initscr(); // start screen curses
@@ -19,8 +19,8 @@ void init_board(board_t *board) { // initialize everything for the board and sta
      cbreak(); // stop the buffer input is real-time
      noecho(); // do not show current input
      curs_set(FALSE); // disable cursor display
-     nodelay(stdscr, TRUE); // non blocking input
-     keypad(stdscr, TRUE); //enable arrows
+     nodelay(stdscr, TRUE); // non-blocking input for all screens
+     keypad(stdscr, TRUE); //enable arrows for all screens
 
      // init colors
      init_pair(1, COLOR_GREEN, COLOR_BLACK);
@@ -45,7 +45,7 @@ void init_board(board_t *board) { // initialize everything for the board and sta
 }
 
 
-void update_time(const int time_left, const float text_max_pos) {
+void update_time(const int time_left, const float text_max_pos, WINDOW *status_window) {
 
  const int time_left_seen = time_left / FPS;
  int color = GREEN;
@@ -74,7 +74,7 @@ void update_time(const int time_left, const float text_max_pos) {
 }
 
 
-void update_status(const player_t *player, WINDOW *window ,const char *name, const int time_left, const int current_lvl) {
+void update_status(const player_t *player, WINDOW *status_window ,const char *name, const int time_left, const int current_lvl) {
  // update health and score
 
  werase(status_window);
@@ -82,18 +82,18 @@ void update_status(const player_t *player, WINDOW *window ,const char *name, con
 
  const float text_max_pos = COLS - 40.0f;
 
- mvwprintw(status_window, 1, (int)(text_max_pos * 0.05f), "LEVEL: %d", player->score);
+ mvwprintw(status_window, 1, (int)(text_max_pos * 0.05f), "LEVEL: %d", current_lvl);
  mvwprintw(status_window, 1, (int)(text_max_pos * 0.10f), "NAME: %s", name);
  mvwprintw(status_window, 1, (int)(text_max_pos * 0.20f), "CURRENT SPEED: %d", player->current_speed);
  mvwprintw(status_window, 1, (int)(text_max_pos * 0.45f), "CURRENT HEALTH: %d", player->health);
  mvwprintw(status_window, 1, (int)(text_max_pos * 0.70f), "STARS COLLECTED: %d", player->stars_collected);
 
- update_time(time_left, text_max_pos);
+ update_time(time_left, text_max_pos, status_window);
 
 }
 
 
-void update_player( const player_t *player, WINDOW *window, const int current_frame) {
+void update_player( const player_t *player, WINDOW *game_window, const int current_frame) {
 
   int color;
   const char *sprite_to_draw;
@@ -118,7 +118,7 @@ void update_player( const player_t *player, WINDOW *window, const int current_fr
 }
 
 
-void update_star(const star_t *star) {
+void update_star(const star_t *star, WINDOW *game_window) {
 
 
 
@@ -146,7 +146,7 @@ void update_star(const star_t *star) {
 }
 
 
-void update_hunter(hunter_t *hunter) {
+void update_hunter(hunter_t *hunter, WINDOW *game_window) {
 
  if (hunter->is_active) {
 
@@ -181,7 +181,7 @@ void update_hunter(hunter_t *hunter) {
 }
 
 
-void update_taxi(taxi_t *taxi, const player_t *player) {
+void update_taxi(taxi_t *taxi, WINDOW *game_window) {
 
  if (taxi->visible) {
 
@@ -207,7 +207,7 @@ void update_taxi(taxi_t *taxi, const player_t *player) {
 
 
 void update_screen(const player_t *player, const star_t *stars, hunter_t *hunter,
- const char *name, const int time_left, const int current_lvl, taxi_t *taxi) {
+ const char *name, const int time_left, const int current_lvl, taxi_t *taxi, WINDOW *game_window, WINDOW *status_window) {
 
   werase(game_window);
   box(game_window, 0, 0);
@@ -220,17 +220,17 @@ void update_screen(const player_t *player, const star_t *stars, hunter_t *hunter
 
   update_player(player, game_window, current_frame);
 
-  update_taxi(taxi, player);
+  update_taxi(taxi, game_window);
 
   for (int i = 0; i < MAX_AMM_STARS; i++) {
 
-   update_star(&stars[i]);
+   update_star(&stars[i], game_window);
 
   }
 
  for (int i = 0; i < MAX_AMM_HUNTERS; i++) {
 
-  update_hunter(&hunter[i]);
+  update_hunter(&hunter[i], game_window);
 
  }
 
@@ -242,7 +242,7 @@ void update_screen(const player_t *player, const star_t *stars, hunter_t *hunter
  }
 
 
-int store_score(const char* player_name, int score, score_entry_t *top_scores) {
+int store_score(const char *player_name, const int score, score_entry_t *top_scores) {
 
    FILE* fptr = fopen(SCORE_P, "a");
    if (fptr == nullptr) return 1;
@@ -297,9 +297,9 @@ int store_score(const char* player_name, int score, score_entry_t *top_scores) {
 }
 
 
-void display_scoreboard(score_entry_t *top_scores) {
+void display_scoreboard(score_entry_t *top_scores, WINDOW *window) {
 
-    mvwprintw(game_window, 3, COLS / 2 - 10, "SCOREBOARD");
+    mvwprintw(window, 3, COLS / 2 - 10, "SCOREBOARD");
 
     for (int i = 0; i < AMM_OF_SCORES_TO_SHOW; i++) {
 
@@ -307,13 +307,13 @@ void display_scoreboard(score_entry_t *top_scores) {
             break;
         }
 
-        mvwprintw(game_window, 5 + i, COLS / 2 - 15, "%d. %s - %d", i + 1, top_scores[i].player_name, top_scores[i].score);
+        mvwprintw(window, 5 + i, COLS / 2 - 15, "%d. %s - %d", i + 1, top_scores[i].player_name, top_scores[i].score);
 
     }
 }
 
 
-void game_over(char* player_name, const int score) {
+void game_over(const char* player_name, const int score, WINDOW *game_window, WINDOW *status_window) {
 
     nocbreak();
     noecho();
@@ -338,7 +338,7 @@ void game_over(char* player_name, const int score) {
     }
 
 
-    display_scoreboard(top_scores);
+    display_scoreboard(top_scores, game_window);
 
     mvwprintw(game_window, LINES + 2, COLS/2 + 10, "Press any key to exit...");
 
@@ -353,18 +353,18 @@ void game_over(char* player_name, const int score) {
 }
 
 
-void get_player_name(char *name) {
+void get_player_name(char *name, WINDOW *window) {
 
 
- werase(game_window);
- mvwprintw(game_window, LINES/2, COLS/2 - 10, "ENTER NAME: ");
- wrefresh(game_window);
+ werase(window);
+ mvwprintw(window, LINES/2, COLS/2 - 10, "ENTER NAME: ");
+ wrefresh(window);
 
  nodelay(stdscr, FALSE); // blocking input
  echo(); // show what user types
  curs_set(1); // show cursor
 
- wgetnstr(game_window, name, MAX_PLAYER_NAME_LENGTH);
+ wgetnstr(window, name, MAX_PLAYER_NAME_LENGTH);
 
  noecho(); // hide input again
  curs_set(0); // hide cursor
@@ -373,14 +373,14 @@ void get_player_name(char *name) {
 }
 
 
-void show_lvl_complete(const int current_lvl) {
+void show_lvl_complete(const int current_lvl, WINDOW *window) {
 
- werase(game_window);
+ werase(window);
 
- mvwprintw(game_window, LINES / 2, COLS / 2, "%d COMPLETED", current_lvl);
- mvwprintw(game_window, LINES / 2 + 1, COLS / 2, "PRESS ANY BUTTON TO CONTINUE");
+ mvwprintw(window, LINES / 2, COLS / 2, "%d COMPLETED", current_lvl);
+ mvwprintw(window, LINES / 2 + 1, COLS / 2, "PRESS ANY BUTTON TO CONTINUE");
 
- wrefresh(game_window);
+ wrefresh(window);
 
  timespec req{};
  timespec rem{};
@@ -398,15 +398,15 @@ void show_lvl_complete(const int current_lvl) {
 }
 
 
-void show_win_screen() {
+void show_win_screen(WINDOW *window) {
 
- werase(game_window);
- box(game_window, 0, 0);
+ werase(window);
+ box(window, 0, 0);
 
- mvwprintw(game_window, LINES / 2, COLS / 2 - 5, "YOU WIN!");
- mvwprintw(game_window, LINES / 2 + 1, COLS / 2 - 15, "PRESS ANY BUTTON TO CONTINUE");
+ mvwprintw(window, LINES / 2, COLS / 2 - 5, "YOU WIN!");
+ mvwprintw(window, LINES / 2 + 1, COLS / 2 - 15, "PRESS ANY BUTTON TO CONTINUE");
 
- wrefresh(game_window);
+ wrefresh(window);
 
  nodelay(stdscr, FALSE);
 
