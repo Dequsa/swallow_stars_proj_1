@@ -11,8 +11,14 @@ void update_wind(wind_t *wind) {
     if (wind->change_timer <= 0) {
 
          // generete target place where the wind vector points to
-        wind->target_x = ((float)(rand() % 200) / 100.0f - 1.0f) * MAX_WIND_FORCE;
-        wind->target_y = ((float)(rand() % 200) / 100.0f - 1.0f) * MAX_WIND_FORCE;
+
+        // if rand gives 0 make it -1 if 1 give 1
+        const int direction_x = (rand() % 2 == 0) ? -1 : 1;
+        const int direction_y = (rand() % 2 == 0) ? -1 : 1;
+
+        wind->target_x = direction_x * MAX_WIND_FORCE;
+        wind->target_y = direction_y * MAX_WIND_FORCE;
+
         
         wind->change_timer = WIND_CHANGE_INTERVAL;
     }

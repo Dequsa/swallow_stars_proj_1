@@ -441,6 +441,22 @@ void save_score(int *player_score, const int *collected_stars, const int *time_l
 }
 
 
+void physics(player_t *player, hunter_t *hunters, board_t *board, star_t *stars, int *stars_count, wind_t *wind, int *input_key, const type_t *hunter_types, taxi_t *taxi, const board_t *boards_cache, int current_lvl ) {
+
+    wind_all(wind, player, hunters);
+
+    move_player(player, input_key);
+
+    taxi_all(player, taxi, *input_key);
+
+    stars_all(stars_count, player, stars);
+
+    hunters_movement_all(hunters, player, hunter_types, boards_cache[current_lvl].time_left, current_lvl, board->time_left, board->occupancy_map);
+
+    collision_all(board, hunters, player, stars, stars_count);
+}
+
+
 void main_game_loop(board_t *board, const board_t *boards_cache, player_t *player, hunter_t *hunters, const type_t *hunter_types, star_t *stars, char* player_name, taxi_t *taxi, wind_t *wind, WINDOW *game_window, WINDOW *status_window) {
 
     timespec req{};
@@ -465,17 +481,7 @@ void main_game_loop(board_t *board, const board_t *boards_cache, player_t *playe
 
             int input_key = -1;
 
-            wind_all(wind, player, hunters);
-
-            move_player(player, &input_key);
-
-            taxi_all(player, taxi, input_key);
-
-            stars_all(&stars_count, player, stars);
-
-            hunters_movement_all(hunters, player, hunter_types, boards_cache[current_lvl].time_left, current_lvl, board->time_left, board->occupancy_map);
-
-            collision_all(board, hunters, player, stars, &stars_count);
+            physics(player, hunters, board, stars, &stars_count, wind, &input_key, hunter_types, taxi, boards_cache, current_lvl);
 
             update_screen(player, stars, hunters, player_name, board->time_left, current_lvl, taxi, game_window, status_window);
 
